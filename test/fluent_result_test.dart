@@ -51,7 +51,7 @@ void main() {
     });
 
     test('fail message 2', () {
-      final result = ResultOf.failMessage<Customer>('fail');
+      final result = ResultOf.withErrorMessage<Customer>('fail reason');
       expect(result.isFail, true);
       expect(result.error is ResultError, true);
     });
@@ -66,7 +66,7 @@ void main() {
 
     test('generic with exception', () {
       final message = 'fail';
-      final result = ResultOf.exception<User>(FormatException(message));
+      final result = ResultOf.withException<User>(FormatException(message));
       expect(result.isFail, true);
       expect(result.error is ResultException, true);
       expect(result.error.message.contains(message), true);

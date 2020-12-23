@@ -36,11 +36,11 @@ class ResultOf<T> extends Result {
   }
 
   ///
-  static ResultOf<T> failMessage<T>(String message) =>
+  static ResultOf<T> withErrorMessage<T>(String message) =>
       ResultOf<T>(isSuccess: false, value: null, error: ResultError(message));
 
   ///
-  static ResultOf<T> exception<T>(Exception exception) => ResultOf<T>(
+  static ResultOf<T> withException<T>(Exception exception) => ResultOf<T>(
       isSuccess: false, value: null, error: ResultException(exception));
 
   /// <summary>
