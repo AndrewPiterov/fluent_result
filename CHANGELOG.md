@@ -1,3 +1,7 @@
+# [3.0.0]
+
+* Add `ResultError` object that describes a error and allows the errors to be typed.
+
 # [2.0.0+1]
 
 Correct README.md

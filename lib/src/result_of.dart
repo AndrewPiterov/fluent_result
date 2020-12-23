@@ -1,3 +1,4 @@
+import 'package:fluent_result/src/result_error.dart';
 import 'package:meta/meta.dart';
 
 import 'result.dart';
@@ -8,8 +9,11 @@ class ResultOf<T> extends Result {
   ResultOf({
     @required bool isSuccess,
     @required this.value,
-    String errorMessage,
-  }) : super(isSuccess: isSuccess, errorMessage: errorMessage);
+    ResultError error,
+  }) : super(
+          isSuccess: isSuccess,
+          error: error,
+        );
 
   /// Value of result
   final T value;
@@ -27,7 +31,23 @@ class ResultOf<T> extends Result {
   /// ```dart
   /// ResultOf.fail<MyObject>('fail reason');
   /// ```
-  static ResultOf<T> fail<T>(String message) {
-    return ResultOf<T>(isSuccess: false, value: null, errorMessage: message);
+  static ResultOf<T> fail<T>(ResultError error) {
+    return ResultOf<T>(isSuccess: false, value: null, error: error);
+  }
+
+  /// <summary>
+  /// Convert result with value to result with another value. Use valueConverter
+  /// parameter to specify the value transformation logic.
+  /// </summary>
+  ResultOf<U> toResult<U>({U Function(T) valueConverter}) {
+    if (isSuccess) {
+      if (valueConverter == null) {
+        throw Exception(
+            'If result is success then valueConverter should not be null');
+      }
+      return ResultOf.success<U>(valueConverter(value));
+    }
+
+    return ResultOf.fail<U>(error);
   }
 }

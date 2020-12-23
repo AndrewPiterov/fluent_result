@@ -1,3 +1,4 @@
+import 'package:fluent_result/src/result_error.dart';
 import 'package:meta/meta.dart';
 
 /// `Result` is an object indicating success or failure of an operation
@@ -5,7 +6,7 @@ class Result {
   ///
   const Result({
     @required this.isSuccess,
-    this.errorMessage,
+    this.error,
   });
 
   /// Create success `Result` with value
@@ -14,14 +15,14 @@ class Result {
   /// ```
   const Result.success()
       : isSuccess = true,
-        errorMessage = '';
+        error = null;
 
   /// Create fail `Result` with reason
   /// ```dart
   /// Result.fail('fail reason');
   /// ```
-  Result.fail(this.errorMessage)
-      : assert(errorMessage != null && errorMessage.isNotEmpty),
+  Result.fail(this.error)
+      : assert(error != null),
         isSuccess = false;
 
   /// Returns whether the `Result` is success
@@ -30,8 +31,11 @@ class Result {
   /// Returns whether the `Result` is fail
   bool get isFail => !isSuccess;
 
+  ///
+  final ResultError error;
+
   /// The reason why operation has been failed
-  final String errorMessage;
+  String get errorMessage => error?.message;
 
   // ignore: prefer_const_constructors
   /// Returns success `Result`

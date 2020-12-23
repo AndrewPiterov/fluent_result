@@ -1,3 +1,4 @@
+import 'package:fluent_result/src/result_error.dart';
 import 'package:test/test.dart';
 import 'package:fluent_result/fluent_result.dart';
 
@@ -13,7 +14,7 @@ void main() {
 
     test('is fail and has message', () {
       const errorMessage = 'Some error';
-      final result = Result.fail(errorMessage);
+      final result = Result.fail(const ResultError(errorMessage));
       expect(result.isFail, true);
       expect(result.isSuccess, false);
       expect(result.errorMessage, errorMessage);
@@ -37,7 +38,7 @@ void main() {
 
     test('is fail and has message', () {
       const errorMessage = 'Some error';
-      final result = ResultOf.fail<Customer>(errorMessage);
+      final result = ResultOf.fail<Customer>(const ResultError(errorMessage));
       expect(result.isFail, true);
       expect(result.isSuccess, false);
       expect(result.value == null, true);
