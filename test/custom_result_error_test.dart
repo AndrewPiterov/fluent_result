@@ -13,5 +13,10 @@ void main() {
       expect(result.errorMessage.contains('not found'), true);
       expect(result.errorMessage.contains('33'), true);
     });
+
+    test('with error message', () {
+      final result = Result.withErrorMessage('error message');
+      expect(result.isFail, true);
+    });
   });
 }

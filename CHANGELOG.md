@@ -1,3 +1,8 @@
+# [3.0.2]
+
+* Add `withErrorMessage(String)` method to `ResultOf`
+* Add `withException(Exception)` method to `ResultOf`
+
 # [3.0.1]
 
 * Add `withErrorMessage(String)` method to `Result`

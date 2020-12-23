@@ -36,6 +36,14 @@ ResultOf<MyObject> result = ResultOf.fail<MyObject>(ResultError('a fail reason')
 MyObject value = result.value;
 ```
 
+```dart
+Result result = ResultOf.withErrorMessage<MyObject>('a fail reason');
+```
+
+```dart
+Result result = ResultOf.withException(MyException<MyObject>('exception description'));
+```
+
 ### Converting Result to another
 
 To convert one success result to another success result has to be provided a `valueConverter`
