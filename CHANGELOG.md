@@ -1,3 +1,7 @@
+# [2.0.0]
+
+* Add `ResultOf<T>` for generic Result to hold value of T.
+* Remove `flutter` dependency
 # [1.0.0+1]
 
 Add correct description

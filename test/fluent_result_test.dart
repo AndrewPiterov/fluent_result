@@ -1,54 +1,29 @@
-import 'package:flutter_test/flutter_test.dart';
-
+import 'package:test/test.dart';
 import 'package:fluent_result/fluent_result.dart';
 
-class Customer {
-  final int id;
-  final String name;
-
-  Customer(this.id, this.name);
-}
-
-Result<Customer> getRandomCustomer() {
-  final customer = Customer(1, 'Andrew');
-  return Result.success(value: customer);
-}
-
-Result getRandomCustomerForNonGeneric() {
-  final customer = Customer(777, 'Andrew');
-  return Result.success(value: customer);
-}
+import 'helpers.dart';
 
 void main() {
   group('Non-generic Result', () {
     test('is success', () {
-      final result = Result.success();
+      final result = Result.ok;
       expect(result.isFail, false);
       expect(result.isSuccess, true);
-      expect(result.value == null, true);
     });
 
     test('is fail and has message', () {
-      const String errorMessage = 'Some error';
+      const errorMessage = 'Some error';
       final result = Result.fail(errorMessage);
       expect(result.isFail, true);
       expect(result.isSuccess, false);
-      expect(result.value == null, true);
       expect(result.errorMessage, errorMessage);
-    });
-
-    test('with value', () {
-      final result = getRandomCustomerForNonGeneric();
-      expect(result.isFail, false);
-      expect(result.isSuccess, true);
-      expect(result.value is Customer, true);
     });
   });
 
   group('Generic Result', () {
     test('is success', () {
-      const String data = 'Some date';
-      final result = Result.success(value: data);
+      const data = 'Some date';
+      final result = ResultOf.success(data);
       expect(result.isFail, false);
       expect(result.isSuccess, true);
       expect(result.value == data, true);
@@ -61,8 +36,8 @@ void main() {
     });
 
     test('is fail and has message', () {
-      const String errorMessage = 'Some error';
-      final result = Result.fail(errorMessage);
+      const errorMessage = 'Some error';
+      final result = ResultOf.fail<Customer>(errorMessage);
       expect(result.isFail, true);
       expect(result.isSuccess, false);
       expect(result.value == null, true);
