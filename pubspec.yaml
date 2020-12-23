@@ -1,6 +1,6 @@
 name: fluent_result
 description: Result is an object indicating success or failure of an operation.
-version: 2.0.0
+version: 2.0.0+1
 homepage: https://github.com/AndrewPiterov/fluent_result
 
 environment:

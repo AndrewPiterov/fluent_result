@@ -1,3 +1,7 @@
+# [2.0.0+1]
+
+Correct README.md
+
 # [2.0.0]
 
 * Add `ResultOf<T>` for generic Result to hold value of T.
@@ -6,7 +10,7 @@
 
 Add correct description
 
-# [1.0.0] - 12/23/2020
+# [1.0.0]
 
 Initial Version of the library.
 
