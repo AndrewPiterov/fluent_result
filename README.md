@@ -16,6 +16,14 @@ Result result = Result.success();
 Result result = Result.fail(ResultError('a fail reason'));
 ```
 
+```dart
+Result result = Result.withErrorMessage('a fail reason');
+```
+
+```dart
+Result result = Result.withException(MyException('exception description'));
+```
+
 ### Generic Result
 
 ```dart

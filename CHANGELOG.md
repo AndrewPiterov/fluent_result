@@ -1,3 +1,8 @@
+# [3.0.1]
+
+* Add `withErrorMessage(String)` method to `Result`
+* Add `withException(Exception)` method to `Result`
+
 # [3.0.0+1]
 
 Correct README.md

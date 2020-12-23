@@ -40,9 +40,36 @@ void main() {
       const errorMessage = 'Some error';
       final result = ResultOf.fail<Customer>(const ResultError(errorMessage));
       expect(result.isFail, true);
-      expect(result.isSuccess, false);
       expect(result.value == null, true);
       expect(result.errorMessage, errorMessage);
+    });
+
+    test('fail message', () {
+      final result = Result.withErrorMessage('fail');
+      expect(result.isFail, true);
+      expect(result.error is ResultError, true);
+    });
+
+    test('fail message 2', () {
+      final result = ResultOf.failMessage<Customer>('fail');
+      expect(result.isFail, true);
+      expect(result.error is ResultError, true);
+    });
+
+    test('with exception', () {
+      final message = 'fail';
+      final result = Result.withException(FormatException(message));
+      expect(result.isFail, true);
+      expect(result.error is ResultException, true);
+      expect(result.error.message.contains(message), true);
+    });
+
+    test('generic with exception', () {
+      final message = 'fail';
+      final result = ResultOf.exception<User>(FormatException(message));
+      expect(result.isFail, true);
+      expect(result.error is ResultException, true);
+      expect(result.error.message.contains(message), true);
     });
   });
 }

@@ -19,10 +19,22 @@ class Result {
 
   /// Create fail `Result` with reason
   /// ```dart
-  /// Result.fail('fail reason');
+  /// Result.fail(ResultError('fail reason'));
   /// ```
   Result.fail(this.error)
       : assert(error != null),
+        isSuccess = false;
+
+  ///
+  Result.withErrorMessage(String message)
+      : assert(message != null && message.isNotEmpty),
+        error = ResultError(message),
+        isSuccess = false;
+
+  ///
+  Result.withException(Exception exception)
+      : assert(exception != null),
+        error = ResultException(exception),
         isSuccess = false;
 
   /// Returns whether the `Result` is success
