@@ -1,3 +1,6 @@
-## [0.0.1] - TODO: Add release date.
+# [1.0.0] - 12/23/2020
 
-* TODO: Describe initial release.
+Initial Version of the library.
+
+* Includes the ability to create Success and Fail Results
+* Includes the ability to create Generic Result with value
