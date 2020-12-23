@@ -29,6 +29,6 @@ We accept the following contributions:
 * Reporting issues
 * Fixing bugs
 
-## maintainers
+## Maintainers
 
 * Andrew Piterov
