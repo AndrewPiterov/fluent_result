@@ -13,7 +13,7 @@ Result result = Result.success();
 ```
 
 ```dart
-Result result = Result.fail('a fail reason');
+Result result = Result.fail(ResultError('a fail reason'));
 ```
 
 ### Generic Result
@@ -24,8 +24,23 @@ MyObject value = result.value;
 ```
 
 ```dart
-ResultOf<MyObject> result = ResultOf.fail<MyObject>('a fail reason');
+ResultOf<MyObject> result = ResultOf.fail<MyObject>(ResultError('a fail reason'));
 MyObject value = result.value;
+```
+
+### Converting Result to another
+
+To convert one success result to another success result has to be provided a `valueConverter`
+
+```dart
+final anotherResult =
+    result.toResult(valueConverter: (customer) => User(customer.id));
+```
+
+To convert one fail result to another fail result
+
+```dart
+final anotherResult = failResult.toResult<Customer>();
 ```
 
 ## Contributing
