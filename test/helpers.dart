@@ -1,6 +1,5 @@
 import 'package:fluent_result/fluent_result.dart';
 import 'package:fluent_result/src/result_error.dart';
-import 'package:meta/meta.dart';
 
 class Customer {
   Customer(this.id, this.name);
@@ -26,7 +25,7 @@ Result getRandomCustomerForNonGeneric() {
 
 class CustomerNotFound extends ResultError {
   const CustomerNotFound({
-    @required this.customerId,
+    required this.customerId,
   }) : super('Customer not found with ID $customerId');
 
   final int customerId;

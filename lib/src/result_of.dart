@@ -1,5 +1,4 @@
 import 'package:fluent_result/src/result_error.dart';
-import 'package:meta/meta.dart';
 
 import 'result.dart';
 
@@ -7,9 +6,9 @@ import 'result.dart';
 class ResultOf<T> extends Result {
   ///
   ResultOf({
-    @required bool isSuccess,
-    @required this.value,
-    ResultError error,
+    required bool isSuccess,
+    required this.value,
+    ResultError? error,
   }) : super(
           isSuccess: isSuccess,
           error: error,
@@ -31,23 +30,23 @@ class ResultOf<T> extends Result {
   /// ```dart
   /// ResultOf.fail<MyObject>(ResultError('fail reason'));
   /// ```
-  static ResultOf<T> fail<T>(ResultError error) {
-    return ResultOf<T>(isSuccess: false, value: null, error: error);
+  static ResultOf<T?> fail<T>(ResultError? error) {
+    return ResultOf<T?>(isSuccess: false, value: null, error: error);
   }
 
   ///
-  static ResultOf<T> withErrorMessage<T>(String message) =>
-      ResultOf<T>(isSuccess: false, value: null, error: ResultError(message));
+  static ResultOf<T?> withErrorMessage<T>(String message) =>
+      ResultOf<T?>(isSuccess: false, value: null, error: ResultError(message));
 
   ///
-  static ResultOf<T> withException<T>(Exception exception) => ResultOf<T>(
+  static ResultOf<T?> withException<T>(Exception exception) => ResultOf<T?>(
       isSuccess: false, value: null, error: ResultException(exception));
 
   /// <summary>
   /// Convert result with value to result with another value. Use valueConverter
   /// parameter to specify the value transformation logic.
   /// </summary>
-  ResultOf<U> toResult<U>({U Function(T) valueConverter}) {
+  ResultOf<U?> toResult<U>({U Function(T)? valueConverter}) {
     if (isSuccess) {
       if (valueConverter == null) {
         throw Exception(

@@ -69,4 +69,4 @@ We accept the following contributions:
 
 ## Maintainers
 
-* Andrew Piterov
+* [Andrew Piterov](mailto:piterov1990@gmail.com?subject=[GitHub]%20Source%20Dart%20fluent_result)

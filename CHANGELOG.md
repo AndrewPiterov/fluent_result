@@ -1,3 +1,11 @@
+# [4.0.1]
+
+* Migrate to null-safety
+
+# [4.0.0]
+
+* Update dependencies for migration to null-safety
+
 # [3.0.2]
 
 * Add `withErrorMessage(String)` method to `ResultOf`

@@ -1,11 +1,10 @@
 import 'package:fluent_result/src/result_error.dart';
-import 'package:meta/meta.dart';
 
 /// `Result` is an object indicating success or failure of an operation
 class Result {
   ///
   const Result({
-    @required this.isSuccess,
+    required this.isSuccess,
     this.error,
   });
 
@@ -21,20 +20,16 @@ class Result {
   /// ```dart
   /// Result.fail(ResultError('fail reason'));
   /// ```
-  Result.fail(this.error)
-      : assert(error != null),
-        isSuccess = false;
+  Result.fail(ResultError this.error) : isSuccess = false;
 
   ///
   Result.withErrorMessage(String message)
-      : assert(message != null && message.isNotEmpty),
-        error = ResultError(message),
+      : error = ResultError(message),
         isSuccess = false;
 
   ///
   Result.withException(Exception exception)
-      : assert(exception != null),
-        error = ResultException(exception),
+      : error = ResultException(exception),
         isSuccess = false;
 
   /// Returns whether the `Result` is success
@@ -44,10 +39,10 @@ class Result {
   bool get isFail => !isSuccess;
 
   ///
-  final ResultError error;
+  final ResultError? error;
 
   /// The reason why operation has been failed
-  String get errorMessage => error?.message;
+  String? get errorMessage => error?.message;
 
   // ignore: prefer_const_constructors
   /// Returns success `Result`

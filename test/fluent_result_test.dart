@@ -61,7 +61,7 @@ void main() {
       final result = Result.withException(FormatException(message));
       expect(result.isFail, true);
       expect(result.error is ResultException, true);
-      expect(result.error.message.contains(message), true);
+      expect(result.error!.message.contains(message), true);
     });
 
     test('generic with exception', () {
@@ -69,7 +69,7 @@ void main() {
       final result = ResultOf.withException<User>(FormatException(message));
       expect(result.isFail, true);
       expect(result.error is ResultException, true);
-      expect(result.error.message.contains(message), true);
+      expect(result.error!.message.contains(message), true);
     });
   });
 }

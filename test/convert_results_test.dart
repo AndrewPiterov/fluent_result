@@ -14,7 +14,7 @@ void main() {
       final detailedResult =
           result.toResult(valueConverter: (customer) => User(customer.id));
       expect(detailedResult.value is User, true);
-      expect(detailedResult.value.id == 1, true);
+      expect(detailedResult.value!.id == 1, true);
     });
   });
 

@@ -10,8 +10,8 @@ void main() {
       expect(result.isFail, true);
       expect(result.isSuccess, false);
       expect(result.error is CustomerNotFound, true);
-      expect(result.errorMessage.contains('not found'), true);
-      expect(result.errorMessage.contains('33'), true);
+      expect(result.errorMessage!.contains('not found'), true);
+      expect(result.errorMessage!.contains('33'), true);
     });
 
     test('with error message', () {
