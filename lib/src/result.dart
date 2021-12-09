@@ -64,7 +64,8 @@ class Result {
   String? get errorMessage => error?.message;
 
   /// Contains the Result a error or not
-  bool contains(ResultError error) => errors.contains(error);
+  bool contains<ResultError>() =>
+      errors.any((element) => element is ResultError);
 
   /// Add another error
   void add(ResultError error) {

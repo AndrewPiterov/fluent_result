@@ -1,3 +1,7 @@
+# [4.2.0]
+
+* [Fix] `contains<T>()`
+
 # [4.1.0]
 
 * [Add] errors collection

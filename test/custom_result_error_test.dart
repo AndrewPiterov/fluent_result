@@ -31,10 +31,22 @@ void main() {
     res.isFail.should.beTrue();
 
     final err1Copy = CustomerNotFound(customerId: 1);
-    res.contains(err1Copy).should.beTrue();
+    res.contains<CustomerNotFound>().should.beTrue();
 
     final err2Copy = InvalidPasswordError('The password 123456 is invalid');
-    res.contains(err2Copy).should.beTrue();
+    res.contains<InvalidPasswordError>().should.beTrue();
+  });
+
+  test('Caontains error', () {
+    final err1 = CustomerNotFound(customerId: 1);
+    final res = Result.fail(err1);
+
+    res.contains<CustomerNotFound>().should.beTrue();
+    res.contains<InvalidPasswordError>().should.beFalse();
+
+    final err2 = InvalidPasswordError('The password 123456 is invalid');
+    res.add(err2);
+    res.contains<InvalidPasswordError>().should.beTrue();
   });
 
   test('Add error', () {
