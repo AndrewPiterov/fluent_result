@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_redundant_argument_values
+
 import 'package:fluent_result/fluent_result.dart';
 import 'package:fluent_result/src/result_error.dart';
 import 'package:test/test.dart';

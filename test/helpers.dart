@@ -23,6 +23,11 @@ Result getRandomCustomerForNonGeneric() {
   return ResultOf.success(customer);
 }
 
+class InvalidPasswordError extends ResultError {
+  const InvalidPasswordError(String message)
+      : super(message, key: 'InvalidPasswordError');
+}
+
 class CustomerNotFound extends ResultError {
   const CustomerNotFound({
     required this.customerId,

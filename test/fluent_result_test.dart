@@ -1,6 +1,9 @@
-import 'package:fluent_result/src/result_error.dart';
-import 'package:test/test.dart';
+// ignore_for_file: prefer_const_declarations
+
 import 'package:fluent_result/fluent_result.dart';
+import 'package:fluent_result/src/result_error.dart';
+import 'package:shouldly/shouldly.dart';
+import 'package:test/test.dart';
 
 import 'helpers.dart';
 
@@ -15,8 +18,8 @@ void main() {
     test('is fail and has message', () {
       const errorMessage = 'Some error';
       final result = Result.fail(const ResultError(errorMessage));
-      expect(result.isFail, true);
-      expect(result.isSuccess, false);
+      result.isFail.should.beTrue();
+      result.isSuccess.should.beFalse();
       expect(result.errorMessage, errorMessage);
     });
   });
@@ -31,9 +34,9 @@ void main() {
     });
 
     test('has value', () {
-      final customer = getRandomCustomer();
-      expect(customer.isSuccess, true);
-      expect(customer.value != null, true);
+      final customerResult = getRandomCustomer();
+      expect(customerResult.isSuccess, true);
+      customerResult.value.should.not.beNull();
     });
 
     test('is fail and has message', () {

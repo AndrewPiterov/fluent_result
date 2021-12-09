@@ -11,7 +11,7 @@ class ResultOf<T> extends Result {
     ResultError? error,
   }) : super(
           isSuccess: isSuccess,
-          error: error,
+          errors: error == null ? [] : [error],
         );
 
   /// Value of result
@@ -40,7 +40,10 @@ class ResultOf<T> extends Result {
 
   ///
   static ResultOf<T?> withException<T>(Exception exception) => ResultOf<T?>(
-      isSuccess: false, value: null, error: ResultException(exception));
+        isSuccess: false,
+        value: null,
+        error: ResultException(exception),
+      );
 
   /// <summary>
   /// Convert result with value to result with another value. Use valueConverter
@@ -50,7 +53,8 @@ class ResultOf<T> extends Result {
     if (isSuccess) {
       if (valueConverter == null) {
         throw Exception(
-            'If result is success then valueConverter should not be null');
+          'If result is success then valueConverter should not be null',
+        );
       }
       return ResultOf.success<U>(valueConverter(value));
     }

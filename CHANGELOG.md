@@ -1,10 +1,14 @@
+# [4.1.0]
+
+* [Add] errors collection
+
 # [4.0.1]
 
-* Migrate to null-safety
+* [Migrate] to null-safety
 
 # [4.0.0]
 
-* Update dependencies for migration to null-safety
+* [Update] dependencies for migration to null-safety
 
 # [3.0.2]
 
@@ -13,8 +17,8 @@
 
 # [3.0.1]
 
-* Add `withErrorMessage(String)` method to `Result`
-* Add `withException(Exception)` method to `Result`
+* [Add] `withErrorMessage(String)` method to `Result`
+* [Add] `withException(Exception)` method to `Result`
 
 # [3.0.0+1]
 
@@ -22,7 +26,7 @@ Correct README.md
 
 # [3.0.0]
 
-* Add `ResultError` object that describes a error and allows the errors to be typed.
+* [Add] `ResultError` object that describes a error and allows the errors to be typed.
 
 # [2.0.0+1]
 
@@ -30,11 +34,12 @@ Correct README.md
 
 # [2.0.0]
 
-* Add `ResultOf<T>` for generic Result to hold value of T.
-* Remove `flutter` dependency
+* [Add] `ResultOf<T>` for generic Result to hold value of T.
+* [Remove] `flutter` dependency
+
 # [1.0.0+1]
 
-Add correct description
+* [Add] correct description
 
 # [1.0.0]
 
