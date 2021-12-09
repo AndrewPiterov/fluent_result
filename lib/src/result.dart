@@ -64,8 +64,11 @@ class Result {
   String? get errorMessage => error?.message;
 
   /// Contains the Result a error or not
-  bool contains<ResultError>() =>
-      errors.any((element) => element is ResultError);
+  bool contains<T extends ResultError>() => get<T>() != null;
+
+  /// try get the specific error
+  T? get<T extends ResultError>() =>
+      errors.firstWhereOrNull((element) => element is T) as T?;
 
   /// Add another error
   void add(ResultError error) {

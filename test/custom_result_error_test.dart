@@ -42,11 +42,14 @@ void main() {
     final res = Result.fail(err1);
 
     res.contains<CustomerNotFound>().should.beTrue();
+    res.get<CustomerNotFound>().should.not.beNull();
     res.contains<InvalidPasswordError>().should.beFalse();
+    res.get<InvalidPasswordError>().should.beNull();
 
     final err2 = InvalidPasswordError('The password 123456 is invalid');
     res.add(err2);
     res.contains<InvalidPasswordError>().should.beTrue();
+    res.get<InvalidPasswordError>().should.not.beNull();
   });
 
   test('Add error', () {

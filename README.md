@@ -100,6 +100,7 @@ final err2 = InvalidPasswordError('The password 123456 is invalid');
 res.add(err2);
 
 res.contains<InvalidPasswordError>(); // true
+res.get<InvalidPasswordError>().should.not.beNull();
 ```
 
 ## Contributing

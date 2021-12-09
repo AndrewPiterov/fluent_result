@@ -1,3 +1,8 @@
+# [4.3.0]
+
+* [Fix] `contains<T>()`
+* [Add] getting specific error from collection by `get<T>`
+
 # [4.2.0]
 
 * [Fix] `contains<T>()`
