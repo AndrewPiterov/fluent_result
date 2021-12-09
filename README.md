@@ -99,7 +99,7 @@ final res = Result.fail(err1);
 final err2 = InvalidPasswordError('The password 123456 is invalid');
 res.add(err2);
 
-res.contains(err2); // true
+res.contains<InvalidPasswordError>(); // true
 ```
 
 ## Contributing
