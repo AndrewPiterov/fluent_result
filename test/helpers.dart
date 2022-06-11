@@ -1,5 +1,5 @@
+import 'package:equatable/equatable.dart';
 import 'package:fluent_result/fluent_result.dart';
-import 'package:fluent_result/src/result_error.dart';
 
 class Customer {
   Customer(this.id, this.name);
@@ -8,9 +8,12 @@ class Customer {
   final String name;
 }
 
-class User {
-  User(this.id);
+class User extends Equatable {
+  const User(this.id);
   final int id;
+
+  @override
+  List<Object?> get props => [id];
 }
 
 ResultOf<Customer> getRandomCustomer({int id = 1}) {
@@ -24,12 +27,12 @@ Result getRandomCustomerForNonGeneric() {
 }
 
 class InvalidPasswordError extends ResultError {
-  const InvalidPasswordError(String message)
+  InvalidPasswordError(String message)
       : super(message, key: 'InvalidPasswordError');
 }
 
 class CustomerNotFound extends ResultError {
-  const CustomerNotFound({
+  CustomerNotFound({
     required this.customerId,
   }) : super('Customer not found with ID $customerId');
 

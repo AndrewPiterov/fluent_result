@@ -1,3 +1,16 @@
+# [5.0.0]
+
+#### Breaking changes
+
+* `ResultError` has not const constructor anymore.
+
+#### Updates
+
+* Use `withError` and `withErrors` instead of `fail` and `fails` respectively.
+* [Add] folding onFail and onSuccess with `fold(onFail, onSuccess)`.
+* [Add] mapping any object to `ResultOf<T>` with `toResult()`.
+* [Add] `failIf(condition, reason)` and `okIf(condition, failReason)`.
+
 # [4.3.0]
 
 * [Fix] `contains<T>()`

@@ -9,44 +9,52 @@
 
 `fluent_result` is a lightweight Dart library developed to solve a common problem. It returns an object indicating success or failure of an operation instead of throwing/using exceptions.
 
+- Store multiple errors in one Result object
+- Store powerful and elaborative Error object instead of only error messages in string format
+- Designing Errors in an object-oriented way
+
 ## Usage
 
-### Simple Non-Generic Result
+### Creating a `Result`
+
+Create a result which indicates success
 
 ```dart
 Result result = Result.success();
+Result successResult1 = Result.ok; // equivalent to a `Result.success()` but shorter
 ```
+
+Create a result which indicates failure
 
 ```dart
-Result result = Result.fail(ResultError('a fail reason'));
+Result errorResult1 = Result.withErrorMessage('a fail reason');
+Result errorResult2 = Result.withError(ResultError('my error message'));
+Result errorResult3 = Result.withException(MyException('exception description'));
 ```
 
-```dart
-Result result = Result.withErrorMessage('a fail reason');
-```
+### Generic `ResultOf<T>`
 
-```dart
-Result result = Result.withException(MyException('exception description'));
-```
-
-### Generic Result
+Success result with value:
 
 ```dart
 ResultOf<MyObject> result = ResultOf.success(MyObject());
 MyObject value = result.value;
 ```
 
+Fail result with error and without value:
+
 ```dart
 ResultOf<MyObject> result = ResultOf.fail<MyObject>(ResultError('a fail reason'));
-MyObject value = result.value;
+MyObject value = result.value; // is null because of the fail result
 ```
 
-```dart
-Result result = ResultOf.withErrorMessage<MyObject>('a fail reason');
-```
+### `failIf()` and `okIf()`
+
+With the methods `failIf()` and `okIf()` you can also write in a more readable way:
 
 ```dart
-Result result = ResultOf.withException(MyException<MyObject>('exception description'));
+final result1 = Result.failIf(() => firstName.isEmpty, "First Name is empty");
+final result2 = Result.okIf(() => firstName.isNotEmpty, 'First name should not be empty');
 ```
 
 ### Converting Result to another

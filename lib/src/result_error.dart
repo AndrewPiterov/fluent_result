@@ -1,15 +1,20 @@
 import 'package:quiver/core.dart';
 
 /// Base Result Error object
-class ResultError {
+class ResultError extends Error {
   ///
-  const ResultError(this.message, {this.key = 'ResultError'});
+  ResultError(this.message, {this.key = 'ResultError'});
 
   /// Key of error
   final String key;
 
   /// Error message
   final String message;
+
+  ///
+  static ResultError of(Error error) {
+    return ResultError(error.toString());
+  }
 
   @override
   bool operator ==(Object other) =>

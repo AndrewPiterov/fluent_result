@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_const_declarations
 
 import 'package:fluent_result/fluent_result.dart';
-import 'package:fluent_result/src/result_error.dart';
 import 'package:shouldly/shouldly.dart';
 import 'package:test/test.dart';
 
@@ -17,7 +16,7 @@ void main() {
 
     test('is fail and has message', () {
       const errorMessage = 'Some error';
-      final result = Result.fail(const ResultError(errorMessage));
+      final result = Result.withError(ResultError(errorMessage));
       result.isFail.should.beTrue();
       result.isSuccess.should.beFalse();
       expect(result.errorMessage, errorMessage);
@@ -41,7 +40,7 @@ void main() {
 
     test('is fail and has message', () {
       const errorMessage = 'Some error';
-      final result = ResultOf.fail<Customer>(const ResultError(errorMessage));
+      final result = ResultOf.withError(ResultError(errorMessage));
       expect(result.isFail, true);
       expect(result.value == null, true);
       expect(result.errorMessage, errorMessage);

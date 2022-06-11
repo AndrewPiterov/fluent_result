@@ -24,6 +24,7 @@ class Result {
   /// ```dart
   /// Result.fail(ResultError('fail reason'));
   /// ```
+  @Deprecated('use withError instead')
   Result.fail(ResultError error)
       : isSuccess = false,
         _errors = [error];
@@ -32,7 +33,24 @@ class Result {
   /// ```dart
   /// Result.fail(ResultError('fail reason'));
   /// ```
+  @Deprecated('use withErrors instead')
   Result.fails(List<ResultError> errors)
+      : isSuccess = false,
+        _errors = errors;
+
+  /// Create fail `Result` with reason
+  /// ```dart
+  /// Result.fail(ResultError('fail reason'));
+  /// ```
+  Result.withError(ResultError error)
+      : isSuccess = false,
+        _errors = [error];
+
+  /// Create fail `Result` with reason
+  /// ```dart
+  /// Result.fail(ResultError('fail reason'));
+  /// ```
+  Result.withErrors(List<ResultError> errors)
       : isSuccess = false,
         _errors = errors;
 
@@ -83,6 +101,38 @@ class Result {
   /// Returns success `Result`
   // ignore: prefer_constructors_over_static_methods
   static Result get ok => const Result.success();
+
+  /// Fold the `result`
+  void fold({
+    required Function(List<ResultError> errors) onFail,
+    required Function() onSuccess,
+  }) {
+    if (isFail) {
+      onFail(errors);
+    } else {
+      onSuccess();
+    }
+  }
+
+  ///
+  // ignore: prefer_constructors_over_static_methods
+  static Result failIf(bool Function() verify, String reason) {
+    if (verify()) {
+      return Result.withErrorMessage(reason);
+    }
+
+    return Result.ok;
+  }
+
+  ///
+  // ignore: prefer_constructors_over_static_methods
+  static Result okIf(bool Function() verify, String reason) {
+    if (!verify()) {
+      return Result.withErrorMessage(reason);
+    }
+
+    return Result.ok;
+  }
 
   @override
   bool operator ==(Object other) =>

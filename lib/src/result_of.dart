@@ -1,6 +1,4 @@
-import 'package:fluent_result/src/result_error.dart';
-
-import 'result.dart';
+import 'package:fluent_result/fluent_result.dart';
 
 /// Generic version of `Result` that holds value
 class ResultOf<T> extends Result {
@@ -15,7 +13,7 @@ class ResultOf<T> extends Result {
         );
 
   /// Value of result
-  final T value;
+  final T? value;
 
   // ignore: prefer_constructors_over_static_methods
   /// Create success `Result` with value
@@ -30,7 +28,17 @@ class ResultOf<T> extends Result {
   /// ```dart
   /// ResultOf.fail<MyObject>(ResultError('fail reason'));
   /// ```
+  @Deprecated('use withError instead')
   static ResultOf<T?> fail<T>(ResultError? error) {
+    return ResultOf<T?>(isSuccess: false, value: null, error: error);
+  }
+
+  // ignore: prefer_constructors_over_static_methods
+  /// Create fail `Result` with reason of fail
+  /// ```dart
+  /// ResultOf.withError<MyObject>(ResultError('fail reason'));
+  /// ```
+  static ResultOf<T?> withError<T>(ResultError error) {
     return ResultOf<T?>(isSuccess: false, value: null, error: error);
   }
 
@@ -56,9 +64,9 @@ class ResultOf<T> extends Result {
           'If result is success then valueConverter should not be null',
         );
       }
-      return ResultOf.success<U>(valueConverter(value));
+      return ResultOf.success<U>(valueConverter(value!));
     }
 
-    return ResultOf.fail<U>(error);
+    return ResultOf.withError<U>(error!);
   }
 }
