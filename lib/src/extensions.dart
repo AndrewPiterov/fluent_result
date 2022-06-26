@@ -11,17 +11,17 @@ extension ResultExtension on Object {
   /// ```
   ResultOf<T?> asResult<T>() {
     if (this is ResultError) {
-      return ResultOf.withError<T>(this as ResultError);
+      return fail(this);
     }
 
     if (this is Error) {
-      return ResultOf.withError<T>(ResultError.of(this as Error));
+      return fail(ResultError.of(this));
     }
 
     if (this is Exception) {
-      return ResultOf.withError<T>(ResultException(this as Exception));
+      return fail(ResultException(this as Exception));
     }
 
-    return ResultOf.success(this as T);
+    return successWith(this as T);
   }
 }

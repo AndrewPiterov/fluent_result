@@ -1,5 +1,7 @@
+import 'dart:developer';
+
 import 'package:collection/collection.dart';
-import 'package:fluent_result/src/result_error.dart';
+import 'package:fluent_result/fluent_result.dart';
 import 'package:quiver/core.dart';
 
 final _eq = const ListEquality().equals;
@@ -24,7 +26,6 @@ class Result {
   /// ```dart
   /// Result.fail(ResultError('fail reason'));
   /// ```
-  @Deprecated('use withError instead')
   Result.fail(ResultError error)
       : isSuccess = false,
         _errors = [error];
@@ -42,9 +43,8 @@ class Result {
   /// ```dart
   /// Result.fail(ResultError('fail reason'));
   /// ```
-  Result.withError(ResultError error)
-      : isSuccess = false,
-        _errors = [error];
+  @Deprecated('Use `withErr(object)`')
+  static Result withError(ResultError error) => withErr(error);
 
   /// Create fail `Result` with reason
   /// ```dart
@@ -55,14 +55,29 @@ class Result {
         _errors = errors;
 
   ///
-  Result.withErrorMessage(String message)
-      : _errors = [ResultError(message)],
-        isSuccess = false;
+  @Deprecated('Use `withErr(object)`')
+  static Result withErrorMessage(String message) => withErr(message);
 
   ///
-  Result.withException(Exception exception)
-      : _errors = [ResultException(exception)],
-        isSuccess = false;
+  @Deprecated('Use `withErr(object)`')
+  static Result withException(Exception exception) => withErr(exception);
+
+  ///
+  static Result withErr(Object object) {
+    if (object is Exception) {
+      return Result.fail(ResultException(object));
+    }
+
+    if (object is Error) {
+      return Result.fail(ResultError.of(object));
+    }
+
+    if (object is ResultError) {
+      return Result.fail(object);
+    }
+
+    return Result.fail(ResultError(object.toString()));
+  }
 
   /// Returns whether the `Result` is success
   final bool isSuccess;
@@ -118,7 +133,7 @@ class Result {
   // ignore: prefer_constructors_over_static_methods
   static Result failIf(bool Function() verify, String reason) {
     if (verify()) {
-      return Result.withErrorMessage(reason);
+      return Result.withErr(reason);
     }
 
     return Result.ok;
@@ -128,10 +143,32 @@ class Result {
   // ignore: prefer_constructors_over_static_methods
   static Result okIf(bool Function() verify, String reason) {
     if (!verify()) {
-      return Result.withErrorMessage(reason);
+      return Result.withErr(reason);
     }
 
     return Result.ok;
+  }
+
+  /// Wrapped on try/catch
+  factory Result.trySync(Function() action) {
+    try {
+      action();
+      return Result.ok;
+    } catch (e) {
+      log(e.toString());
+      return Result.withErr(e);
+    }
+  }
+
+  /// Wrapped on try/catch
+  static Future<Result> tryAsync(Future Function() action) async {
+    try {
+      await action();
+      return Result.ok;
+    } catch (e) {
+      log(e.toString());
+      return Result.withErr(e);
+    }
   }
 
   @override

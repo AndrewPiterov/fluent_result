@@ -27,8 +27,7 @@ Result getRandomCustomerForNonGeneric() {
 }
 
 class InvalidPasswordError extends ResultError {
-  InvalidPasswordError(String message)
-      : super(message, key: 'InvalidPasswordError');
+  InvalidPasswordError(String message) : super(message);
 }
 
 class CustomerNotFound extends ResultError {

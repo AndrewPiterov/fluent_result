@@ -1,3 +1,9 @@
+# [6.0.0]
+
+* [Add] `success`, `successWith`, `fail` methods
+* [Add] `trySync`, `tryAsync` methods
+* [Change] `toResult` into `map`
+
 # [5.0.0]
 
 #### Breaking changes
