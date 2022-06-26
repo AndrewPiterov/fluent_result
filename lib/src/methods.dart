@@ -12,5 +12,5 @@ ResultOf<T> successWith<T>(T value) {
 
 /// Fail result with reason
 ResultOf<T?> fail<T>(Object reason) {
-  return ResultOf.withErr<T>(reason);
+  return ResultOf.failWith(reason);
 }

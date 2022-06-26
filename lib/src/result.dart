@@ -22,61 +22,17 @@ class Result {
       : isSuccess = true,
         _errors = const [];
 
-  /// Create fail `Result` with reason
+  /// Result with fail reason
   /// ```dart
-  /// Result.fail(ResultError('fail reason'));
+  /// Result.failWith('fail reason');
   /// ```
-  Result.fail(ResultError error)
-      : isSuccess = false,
-        _errors = [error];
-
-  /// Create fail `Result` with reason
-  /// ```dart
-  /// Result.fail(ResultError('fail reason'));
-  /// ```
-  @Deprecated('use withErrors instead')
-  Result.fails(List<ResultError> errors)
-      : isSuccess = false,
-        _errors = errors;
-
-  /// Create fail `Result` with reason
-  /// ```dart
-  /// Result.fail(ResultError('fail reason'));
-  /// ```
-  @Deprecated('Use `withErr(object)`')
-  static Result withError(ResultError error) => withErr(error);
-
-  /// Create fail `Result` with reason
-  /// ```dart
-  /// Result.fail(ResultError('fail reason'));
-  /// ```
-  Result.withErrors(List<ResultError> errors)
-      : isSuccess = false,
-        _errors = errors;
-
-  ///
-  @Deprecated('Use `withErr(object)`')
-  static Result withErrorMessage(String message) => withErr(message);
-
-  ///
-  @Deprecated('Use `withErr(object)`')
-  static Result withException(Exception exception) => withErr(exception);
-
-  ///
-  static Result withErr(Object object) {
-    if (object is Exception) {
-      return Result.fail(ResultException(object));
-    }
-
-    if (object is Error) {
-      return Result.fail(ResultError.of(object));
-    }
-
-    if (object is ResultError) {
-      return Result.fail(object);
-    }
-
-    return Result.fail(ResultError(object.toString()));
+  factory Result.failWith(Object reason) {
+    final List<Object> reasons =
+        reason is Iterable ? reason.toList().cast() : [reason];
+    return Result(
+      isSuccess: false,
+      errors: reasons.map((e) => ResultError.of(e)).toList(),
+    );
   }
 
   /// Returns whether the `Result` is success
@@ -101,16 +57,16 @@ class Result {
 
   /// try get the specific error
   T? get<T extends ResultError>() =>
-      errors.firstWhereOrNull((element) => element is T) as T?;
+      errors.firstWhereOrNull((e) => e is T) as T?;
 
   /// Add another error
-  void add(ResultError error) {
-    _errors.add(error);
+  void add(Object reason) {
+    _errors.add(ResultError.of(reason));
   }
 
   /// Add other errors
-  void addAll(List<ResultError> errors) {
-    _errors.addAll(errors);
+  void addAll(List<Object> errors) {
+    _errors.addAll(errors.map((e) => ResultError.of(e)));
   }
 
   /// Returns success `Result`
@@ -133,7 +89,7 @@ class Result {
   // ignore: prefer_constructors_over_static_methods
   static Result failIf(bool Function() verify, String reason) {
     if (verify()) {
-      return Result.withErr(reason);
+      return Result.failWith(reason);
     }
 
     return Result.ok;
@@ -143,7 +99,7 @@ class Result {
   // ignore: prefer_constructors_over_static_methods
   static Result okIf(bool Function() verify, String reason) {
     if (!verify()) {
-      return Result.withErr(reason);
+      return Result.failWith(reason);
     }
 
     return Result.ok;
@@ -156,7 +112,7 @@ class Result {
       return Result.ok;
     } catch (e) {
       log(e.toString());
-      return Result.withErr(e);
+      return Result.failWith(e);
     }
   }
 
@@ -167,7 +123,7 @@ class Result {
       return Result.ok;
     } catch (e) {
       log(e.toString());
-      return Result.withErr(e);
+      return Result.failWith(e);
     }
   }
 

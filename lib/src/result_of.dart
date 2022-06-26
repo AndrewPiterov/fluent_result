@@ -8,10 +8,10 @@ class ResultOf<T> extends Result {
   ResultOf({
     required bool isSuccess,
     required this.value,
-    ResultError? error,
+    List<ResultError> error = const [],
   }) : super(
           isSuccess: isSuccess,
-          errors: error == null ? [] : [error],
+          errors: error,
         );
 
   /// Value of result
@@ -25,44 +25,19 @@ class ResultOf<T> extends Result {
   static ResultOf<T> success<T>(T data) =>
       ResultOf<T>(isSuccess: true, value: data);
 
-  // ignore: prefer_constructors_over_static_methods
-  /// Create fail `Result` with reason of fail
+  /// Result with fail reason
   /// ```dart
-  /// ResultOf.fail<MyObject>(ResultError('fail reason'));
+  /// ResultOf.failWith('fail reason');
   /// ```
-  static ResultOf<T?> fail<T>(ResultError error) {
-    return ResultOf<T?>(isSuccess: false, value: null, error: error);
-  }
+  static ResultOf<T?> failWith<T>(Object reason) {
+    final List<Object> reasons =
+        reason is Iterable ? reason.toList().cast() : [reason];
 
-  // ignore: prefer_constructors_over_static_methods
-  /// Create fail `Result` with reason of fail
-  /// ```dart
-  /// ResultOf.withError<MyObject>(ResultError('fail reason'));
-  /// ```
-  @Deprecated('Use `withErr(object)`')
-  static ResultOf<T?> withError<T>(ResultError error) => withErr(error);
-
-  ///
-  @Deprecated('Use `withErr(object)`')
-  static ResultOf<T?> withErrorMessage<T>(String message) => withErr(message);
-
-  ///
-  @Deprecated('Use `withErr(object)`')
-  static ResultOf<T?> withException<T>(Exception exception) =>
-      withErr(exception);
-
-  ///
-  static ResultOf<T?> withErr<T>(Object object) {
-    if (object is Exception) {
-      return ResultOf.fail(ResultException(object));
-    }
-    if (object is Error) {
-      return ResultOf.fail(ResultError.of(object));
-    }
-    if (object is ResultError) {
-      return ResultOf.fail(object);
-    }
-    return ResultOf.fail(ResultError(object.toString()));
+    return ResultOf(
+      isSuccess: false,
+      value: null,
+      error: reasons.map((e) => ResultError.of(e)).toList(),
+    );
   }
 
   /// Wrapped on try/catch
@@ -72,7 +47,7 @@ class ResultOf<T> extends Result {
       return ResultOf.success(data);
     } catch (e) {
       log(e.toString());
-      return ResultOf.withErr(e);
+      return ResultOf.failWith(e);
     }
   }
 
@@ -83,7 +58,19 @@ class ResultOf<T> extends Result {
       return ResultOf.success(data);
     } catch (e) {
       log(e.toString());
-      return ResultOf.withErr(e);
+      return ResultOf.failWith(e);
+    }
+  }
+
+  /// Fold the `result`
+  void foldWithValue({
+    required Function(List<ResultError> errors) onFail,
+    required Function(T value) onSuccess,
+  }) {
+    if (isFail) {
+      onFail(errors);
+    } else {
+      onSuccess(value!);
     }
   }
 

@@ -6,7 +6,7 @@ void main() {
   test('fail if', () {
     const firstName = '';
     final res = Result.failIf(() => firstName.isEmpty, 'First name is empty');
-    res.should.be(Result.withErrorMessage('First name is empty'));
+    res.should.be(Result.failWith('First name is empty'));
   });
 
   test('ok if', () {

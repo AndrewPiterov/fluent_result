@@ -1,8 +1,8 @@
-// ignore_for_file: prefer_const_declarations
+// ignore_for_file: prefer_const_declarations, avoid_print
 
 import 'package:fluent_result/fluent_result.dart';
 import 'package:shouldly/shouldly.dart';
-import 'package:test/test.dart';
+import 'package:test/test.dart' hide fail;
 
 import 'helpers.dart';
 
@@ -16,10 +16,12 @@ void main() {
 
     test('is fail and has message', () {
       const errorMessage = 'Some error';
-      final result = Result.withErr(const ResultError(errorMessage));
+      final result = Result.failWith(const ResultError(errorMessage));
+      final result2 = fail(const ResultError(errorMessage));
       result.isFail.should.beTrue();
       result.isSuccess.should.beFalse();
       expect(result.errorMessage, errorMessage);
+      result2.should.be(result);
     });
   });
 
@@ -40,27 +42,27 @@ void main() {
 
     test('is fail and has message', () {
       const errorMessage = 'Some error';
-      final result = ResultOf.withError(ResultError(errorMessage));
+      final result = ResultOf.failWith(const ResultError(errorMessage));
       expect(result.isFail, true);
       expect(result.value == null, true);
       expect(result.errorMessage, errorMessage);
     });
 
     test('fail message', () {
-      final result = Result.withErrorMessage('fail');
+      final result = Result.failWith('fail');
       expect(result.isFail, true);
       expect(result.error is ResultError, true);
     });
 
     test('fail message 2', () {
-      final result = ResultOf.withErrorMessage<Customer>('fail reason');
+      final result = ResultOf.failWith<Customer>('fail reason');
       expect(result.isFail, true);
       expect(result.error is ResultError, true);
     });
 
     test('with exception', () {
       final message = 'fail';
-      final result = Result.withException(FormatException(message));
+      final result = Result.failWith(FormatException(message));
       expect(result.isFail, true);
       expect(result.error is ResultException, true);
       expect(result.error!.message.contains(message), true);
@@ -68,7 +70,7 @@ void main() {
 
     test('generic with exception', () {
       final message = 'fail';
-      final result = ResultOf.withException<User>(FormatException(message));
+      final result = ResultOf.failWith<User>(FormatException(message));
       expect(result.isFail, true);
       expect(result.error is ResultException, true);
       expect(result.error!.message.contains(message), true);

@@ -54,7 +54,7 @@ ResultOf<Customer?> getCustomer({String? failReason}) {
   }
 
   if (failReason != null) {
-    return ResultOf.withErr(CustomerNotFound(failReason));
+    return ResultOf.failWith(CustomerNotFound(failReason));
   }
 
   return Customer(1, 'Andrew').asResult();
@@ -62,7 +62,7 @@ ResultOf<Customer?> getCustomer({String? failReason}) {
 
 ResultOf<User?> getUser({String? failReason}) {
   if (failReason != null) {
-    return ResultOf.withErr(UserNotFound(failReason));
+    return ResultOf.failWith(UserNotFound(failReason));
   }
   return const User(1).asResult();
 }

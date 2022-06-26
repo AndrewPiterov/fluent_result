@@ -9,16 +9,19 @@ class ResultError {
   final String message;
 
   ///
-  factory ResultError.of(Object error) {
-    if (error is Exception) {
-      return ResultException(error);
+  factory ResultError.of(Object reason) {
+    if (reason is Exception) {
+      return ResultException(reason);
     }
 
-    if (error is Error) {
+    if (reason is Error) {
       // you should not process error
     }
+    if (reason is ResultError) {
+      return reason;
+    }
 
-    return ResultError(error.toString());
+    return ResultError(reason.toString());
   }
 
   @override
