@@ -21,15 +21,19 @@ Create a result which indicates success
 
 ```dart
 Result result = Result.success();
-Result successResult1 = Result.ok; // equivalent to a `Result.success()` but shorter
+Result sameResult = Result.ok;
+Result sameResult2 = success();
 ```
 
 Create a result which indicates failure
 
 ```dart
-Result errorResult1 = Result.withErrorMessage('a fail reason');
-Result errorResult2 = Result.withError(ResultError('my error message'));
-Result errorResult3 = Result.withException(MyException('exception description'));
+Result errorResult1 = Result.failWith('a fail reason');
+Result errorResult2 = Result.failWith(ResultError('my error message'));
+Result errorResult3 = Result.failWith(MyException('exception description'));
+Result errorResult4 = Result.failWith(['a fail reason', ResultError('my error message')]);
+
+Result same = fail(MyException('exception description'));
 ```
 
 ### Generic `ResultOf<T>`
@@ -38,13 +42,14 @@ Success result with value:
 
 ```dart
 ResultOf<MyObject> result = ResultOf.success(MyObject());
+ResultOf<MyObject> sameResult = successWith(MyObject());
 MyObject value = result.value;
 ```
 
 Fail result with error and without value:
 
 ```dart
-ResultOf<MyObject> result = ResultOf.fail<MyObject>(ResultError('a fail reason'));
+ResultOf<MyObject> result = ResultOf.failWith<MyObject>(ResultError('a fail reason'));
 MyObject value = result.value; // is null because of the fail result
 ```
 
@@ -57,31 +62,80 @@ final result1 = Result.failIf(() => firstName.isEmpty, "First Name is empty");
 final result2 = Result.okIf(() => firstName.isNotEmpty, 'First name should not be empty');
 ```
 
+### Try
+
+#### Sync
+
+```dart
+final res = Result.trySync(() {
+  throw 'Some exception';
+});
+
+res.isFail.should.beTrue();
+res.errorMessage.should.be('Some exception');
+```
+
+#### Async
+
+```dart
+final res = await Result.tryAsync(() async {
+  await Future.delayed(const Duration(seconds: 2));
+  print('Done');
+});
+
+res.isSuccess.should.beTrue();
+```
+
+### Fold
+
+```dart
+Result res = fail('error reason');
+res.fold(
+  onFail: (errors) {
+    // process errors
+  },
+  onSuccess: () {
+    // process success path
+  },
+);
+```
+
+```dart
+ResultOf<String> resultWithData = successWith('someData');
+resultWithData.foldWithValue(
+  onFail: (errors) {
+    // process errors
+  },
+  onSuccess: (data) {
+    // process success path with data
+  },
+);
+```
+
 ### Converting Result to another
 
-To convert one success result to another success result has to be provided a `valueConverter`
+To convert one success result to another success result has to be provided a `valueConverter` function.
 
 ```dart
 final anotherResult =
-    result.toResult(valueConverter: (customer) => User(customer.id));
+    result.map((customer) => User(customer.id));
 ```
 
 To convert one fail result to another fail result
 
 ```dart
-final anotherResult = failResult.toResult<Customer>();
+final anotherResult = failResult.map<Customer>();
 ```
 
 ### Custom errors
 
-To make your codebase more robust. Create your own error collection of the App by extending `ResultError`. \
-`ResultError` has `key` property which you can use for localization.
+To make your codebase more robust. Create your own error collection of the App by extending `ResultError`.
 
 ```dart
 
 class InvalidPasswordError extends ResultError {
   const InvalidPasswordError(String message)
-      : super(message, key: 'InvalidPasswordError');
+      : super(message);
 }
 
 class CustomerNotFound extends ResultError {
