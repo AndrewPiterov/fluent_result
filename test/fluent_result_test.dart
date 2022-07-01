@@ -81,6 +81,7 @@ void main() {
     test('success sync call', () {
       final res = Result.trySync(() {
         print('Done');
+        return success();
       });
 
       res.isSuccess.should.beTrue();
@@ -99,6 +100,7 @@ void main() {
       final res = await Result.tryAsync(() async {
         await Future.delayed(const Duration(seconds: 2));
         print('Done');
+        return success();
       });
 
       res.isSuccess.should.beTrue();
@@ -121,7 +123,7 @@ void main() {
     test('success sync call', () {
       final res = ResultOf.trySync(() {
         print('Done');
-        return 1;
+        return successWith(1);
       });
 
       res.isSuccess.should.beTrue();
@@ -141,7 +143,7 @@ void main() {
       final res = await ResultOf.tryAsync(() async {
         await Future.delayed(const Duration(seconds: 2));
         print('Done');
-        return 2;
+        return successWith(2);
       });
 
       res.isSuccess.should.beTrue();

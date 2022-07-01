@@ -106,24 +106,22 @@ class Result {
   }
 
   /// Wrapped on try/catch
-  factory Result.trySync(Function() action) {
+  factory Result.trySync(Result Function() func) {
     try {
-      action();
-      return Result.ok;
+      return func();
     } catch (e) {
       log(e.toString());
-      return Result.failWith(e);
+      return fail(e);
     }
   }
 
   /// Wrapped on try/catch
-  static Future<Result> tryAsync(Future Function() action) async {
+  static Future<Result> tryAsync(Future<Result> Function() func) async {
     try {
-      await action();
-      return Result.ok;
+      return await func();
     } catch (e) {
       log(e.toString());
-      return Result.failWith(e);
+      return fail(e);
     }
   }
 

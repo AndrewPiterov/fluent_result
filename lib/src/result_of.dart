@@ -41,10 +41,9 @@ class ResultOf<T> extends Result {
   }
 
   /// Wrapped on try/catch
-  static ResultOf<T?> trySync<T>(T Function() func) {
+  static ResultOf<T?> trySync<T>(ResultOf<T> Function() func) {
     try {
-      final data = func();
-      return ResultOf.success(data);
+      return func();
     } catch (e) {
       log(e.toString());
       return ResultOf.failWith(e);
@@ -52,10 +51,10 @@ class ResultOf<T> extends Result {
   }
 
   /// Wrapped on try/catch
-  static Future<ResultOf<T?>> tryAsync<T>(Future<T> Function() func) async {
+  static Future<ResultOf<T?>> tryAsync<T>(
+      Future<ResultOf<T>> Function() func) async {
     try {
-      final data = await func();
-      return ResultOf.success(data);
+      return await func();
     } catch (e) {
       log(e.toString());
       return ResultOf.failWith(e);
