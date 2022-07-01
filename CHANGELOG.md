@@ -1,3 +1,8 @@
+# [7.0.0]
+
+* [Add] `ResultConfig` to customize `exceptionHandler`
+* [Fix] `tries`
+
 # [6.0.0]
 
 * [Add] `success`, `successWith`, `fail` methods
