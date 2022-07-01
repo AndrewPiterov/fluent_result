@@ -98,7 +98,7 @@ void main() {
 
     test('success async call', () async {
       final res = await Result.tryAsync(() async {
-        await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(const Duration(milliseconds: 100));
         print('Done');
         return success();
       });
@@ -109,7 +109,7 @@ void main() {
     test('fail async call', () async {
       const errMessage = 'Some exception';
       final res = await Result.tryAsync(() async {
-        await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(const Duration(milliseconds: 100));
         print('Done');
         throw errMessage;
       });
@@ -141,7 +141,7 @@ void main() {
 
     test('success async call', () async {
       final res = await ResultOf.tryAsync(() async {
-        await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(const Duration(milliseconds: 100));
         print('Done');
         return successWith(2);
       });
@@ -153,7 +153,7 @@ void main() {
     test('fail async call', () async {
       const errMessage = 'Some exception';
       final res = await ResultOf.tryAsync<bool>(() async {
-        await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(const Duration(milliseconds: 100));
         print('Done');
         throw errMessage;
       });

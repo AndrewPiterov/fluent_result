@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:fluent_result/fluent_result.dart';
 
 /// Generic version of `Result` that holds value
@@ -29,9 +27,8 @@ class ResultOf<T> extends Result {
   /// ```dart
   /// ResultOf.failWith('fail reason');
   /// ```
-  static ResultOf<T?> failWith<T>(Object reason) {
-    final List<Object> reasons =
-        reason is Iterable ? reason.toList().cast() : [reason];
+  static ResultOf<T?> failWith<T>(dynamic reason) {
+    final List reasons = reason is Iterable ? reason.toList().cast() : [reason];
 
     return ResultOf(
       isSuccess: false,
@@ -45,19 +42,18 @@ class ResultOf<T> extends Result {
     try {
       return func();
     } catch (e) {
-      log(e.toString());
-      return ResultOf.failWith(e);
+      return ResultConfig.exceptionHandler(e).map();
     }
   }
 
   /// Wrapped on try/catch
   static Future<ResultOf<T?>> tryAsync<T>(
-      Future<ResultOf<T>> Function() func) async {
+    Future<ResultOf<T>> Function() func,
+  ) async {
     try {
       return await func();
     } catch (e) {
-      log(e.toString());
-      return ResultOf.failWith(e);
+      return ResultConfig.exceptionHandler(e).map();
     }
   }
 

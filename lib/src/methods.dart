@@ -11,6 +11,6 @@ ResultOf<T> successWith<T>(T value) {
 }
 
 /// Fail result with reason
-ResultOf<T?> fail<T>(Object reason) {
+ResultOf<T?> fail<T>(dynamic reason) {
   return ResultOf.failWith(reason);
 }

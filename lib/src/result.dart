@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:collection/collection.dart';
 import 'package:fluent_result/fluent_result.dart';
 import 'package:quiver/core.dart';
@@ -89,7 +87,7 @@ class Result {
   // ignore: prefer_constructors_over_static_methods
   static Result failIf(bool Function() verify, String reason) {
     if (verify()) {
-      return Result.failWith(reason);
+      return ResultConfig.exceptionHandler(reason);
     }
 
     return Result.ok;
@@ -99,7 +97,7 @@ class Result {
   // ignore: prefer_constructors_over_static_methods
   static Result okIf(bool Function() verify, String reason) {
     if (!verify()) {
-      return Result.failWith(reason);
+      return ResultConfig.exceptionHandler(reason);
     }
 
     return Result.ok;
@@ -110,8 +108,7 @@ class Result {
     try {
       return func();
     } catch (e) {
-      log(e.toString());
-      return fail(e);
+      return ResultConfig.exceptionHandler(e);
     }
   }
 
@@ -120,8 +117,7 @@ class Result {
     try {
       return await func();
     } catch (e) {
-      log(e.toString());
-      return fail(e);
+      return ResultConfig.exceptionHandler(e);
     }
   }
 

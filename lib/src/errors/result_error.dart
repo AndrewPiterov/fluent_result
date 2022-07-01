@@ -9,7 +9,7 @@ class ResultError {
   final String message;
 
   ///
-  factory ResultError.of(Object reason) {
+  factory ResultError.of(dynamic reason) {
     if (reason is Exception) {
       return ResultException(reason);
     }
