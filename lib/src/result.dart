@@ -48,7 +48,7 @@ class Result {
   ResultError? get error => errors.isEmpty ? null : errors.first;
 
   /// The reason why operation has been failed
-  String? get errorMessage => error?.message;
+  String get errorMessage => error?.message ?? '';
 
   /// Contains the Result a error or not
   bool contains<T extends ResultError>() => get<T>() != null;
@@ -106,7 +106,9 @@ class Result {
   /// Wrapped on try/catch
   factory Result.trySync(Result Function() func) {
     try {
-      return func();
+      final result = func();
+      // ResultConfig.logResult(result);
+      return result;
     } catch (e) {
       return ResultConfig.exceptionHandler(e);
     }
@@ -115,7 +117,9 @@ class Result {
   /// Wrapped on try/catch
   static Future<Result> tryAsync(Future<Result> Function() func) async {
     try {
-      return await func();
+      final result = await func();
+      // ResultConfig.logResult(result);
+      return result;
     } catch (e) {
       return ResultConfig.exceptionHandler(e);
     }

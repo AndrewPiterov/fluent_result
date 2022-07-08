@@ -1,3 +1,8 @@
+# [7.1.0]
+
+* [Add] `logSuccessResult` into `ResultConfig`
+* [Change] `errorMessage` now is non-nullable, by default is empty string
+
 # [7.0.0]
 
 * [Add] `ResultConfig` to customize `exceptionHandler`

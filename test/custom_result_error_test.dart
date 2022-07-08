@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, unused_local_variable
 
 import 'package:fluent_result/fluent_result.dart';
 import 'package:shouldly/shouldly.dart';
@@ -13,8 +13,8 @@ void main() {
       expect(result.isFail, true);
       expect(result.isSuccess, false);
       expect(result.error is CustomerNotFound, true);
-      expect(result.errorMessage!.contains('not found'), true);
-      expect(result.errorMessage!.contains('33'), true);
+      expect(result.errorMessage.contains('not found'), true);
+      expect(result.errorMessage.contains('33'), true);
     });
 
     test('with error message', () {

@@ -40,7 +40,9 @@ class ResultOf<T> extends Result {
   /// Wrapped on try/catch
   static ResultOf<T?> trySync<T>(ResultOf<T> Function() func) {
     try {
-      return func();
+      final result = func();
+      ResultConfig.logSuccessResult(result);
+      return result;
     } catch (e) {
       return ResultConfig.exceptionHandler(e).map();
     }
@@ -51,7 +53,9 @@ class ResultOf<T> extends Result {
     Future<ResultOf<T>> Function() func,
   ) async {
     try {
-      return await func();
+      final result = await func();
+      ResultConfig.logSuccessResult(result);
+      return result;
     } catch (e) {
       return ResultConfig.exceptionHandler(e).map();
     }
@@ -85,6 +89,6 @@ class ResultOf<T> extends Result {
       return ResultOf.success<U>(valueConverter(value!));
     }
 
-    return fail(error!);
+    return fail(error);
   }
 }
