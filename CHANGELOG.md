@@ -1,7 +1,11 @@
+# [7.1.1]
+
+* [Add] **onError** in `trySync`/`tryAsync` for error handler  customization.
+
 # [7.1.0]
 
-* [Add] `logSuccessResult` into `ResultConfig`
-* [Change] `errorMessage` now is non-nullable, by default is empty string
+* [Add] **logSuccessResult** into `ResultConfig`
+* [Change] **errorMessage** now is non-nullable, by default is empty string.
 
 # [7.0.0]
 

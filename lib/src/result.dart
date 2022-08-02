@@ -42,7 +42,7 @@ class Result {
   final List<ResultError> _errors;
 
   ///
-  List<ResultError> get errors => _errors;
+  List<ResultError> get errors => List.unmodifiable(_errors);
 
   ///
   ResultError? get error => errors.isEmpty ? null : errors.first;
@@ -104,23 +104,35 @@ class Result {
   }
 
   /// Wrapped on try/catch
-  factory Result.trySync(Result Function() func) {
+  factory Result.trySync(
+    Result Function() func, {
+    Result Function(dynamic e)? onError,
+  }) {
     try {
       final result = func();
       // ResultConfig.logResult(result);
       return result;
     } catch (e) {
+      if (onError != null) {
+        return onError(e);
+      }
       return ResultConfig.exceptionHandler(e);
     }
   }
 
   /// Wrapped on try/catch
-  static Future<Result> tryAsync(Future<Result> Function() func) async {
+  static Future<Result> tryAsync(
+    Future<Result> Function() func, {
+    Result Function(dynamic e)? onError,
+  }) async {
     try {
       final result = await func();
       // ResultConfig.logResult(result);
       return result;
     } catch (e) {
+      if (onError != null) {
+        return onError(e);
+      }
       return ResultConfig.exceptionHandler(e);
     }
   }

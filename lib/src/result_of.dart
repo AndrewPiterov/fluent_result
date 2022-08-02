@@ -38,25 +38,35 @@ class ResultOf<T> extends Result {
   }
 
   /// Wrapped on try/catch
-  static ResultOf<T?> trySync<T>(ResultOf<T> Function() func) {
+  static ResultOf<T?> trySync<T>(
+    ResultOf<T> Function() func, {
+    ResultOf<T?> Function(dynamic e)? onError,
+  }) {
     try {
       final result = func();
       ResultConfig.logSuccessResult(result);
       return result;
     } catch (e) {
+      if (onError != null) {
+        return onError(e);
+      }
       return ResultConfig.exceptionHandler(e).map();
     }
   }
 
   /// Wrapped on try/catch
   static Future<ResultOf<T?>> tryAsync<T>(
-    Future<ResultOf<T>> Function() func,
-  ) async {
+    Future<ResultOf<T>> Function() func, {
+    ResultOf<T?> Function(dynamic e)? onError,
+  }) async {
     try {
       final result = await func();
       ResultConfig.logSuccessResult(result);
       return result;
     } catch (e) {
+      if (onError != null) {
+        return onError(e);
+      }
       return ResultConfig.exceptionHandler(e).map();
     }
   }
@@ -69,7 +79,7 @@ class ResultOf<T> extends Result {
     if (isFail) {
       onFail(errors);
     } else {
-      onSuccess(value!);
+      onSuccess(value as T);
     }
   }
 
@@ -86,7 +96,7 @@ class ResultOf<T> extends Result {
           'If result is success then valueConverter should not be null',
         );
       }
-      return ResultOf.success<U>(valueConverter(value!));
+      return ResultOf.success<U>(valueConverter(value as T));
     }
 
     return fail(error);
