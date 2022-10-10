@@ -18,9 +18,21 @@ class ResultConfig {
   }
 
   static ResultOf<dynamic> _defaultExceptionHandler(dynamic e) {
-    log('🔴 Result fail: $e');
+    if (exceptionHandlerMatchers.containsKey(e.runtimeType)) {
+      return exceptionHandlerMatchers[e.runtimeType]!(e);
+    }
+
+    _defaultExceptionHandlerMatchers[Exception]!(e);
     return fail(e);
   }
+
+  static final Map<Type, ResultOf Function(dynamic e)>
+      _defaultExceptionHandlerMatchers = {
+    Exception: (e) {
+      log('🔴 $e', name: 'Result');
+      return fail(e);
+    },
+  };
 
   /// Log a success result
   static void Function(Result result) logSuccessResult = _defaultSuccessHandler;
@@ -28,4 +40,8 @@ class ResultConfig {
   /// Log a fail result
   static ResultOf Function(dynamic e) exceptionHandler =
       _defaultExceptionHandler;
+
+  ///
+  static Map<Type, ResultOf Function(dynamic e)> exceptionHandlerMatchers =
+      _defaultExceptionHandlerMatchers;
 }

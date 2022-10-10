@@ -1,3 +1,7 @@
+# [7.2.0]
+
+* [Add] exception handler matchers.
+
 # [7.1.1]
 
 * [Add] **onError** in `trySync`/`tryAsync` for error handler  customization.

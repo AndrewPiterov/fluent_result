@@ -165,6 +165,18 @@ res.contains<InvalidPasswordError>(); // true
 res.get<InvalidPasswordError>().should.not.beNull();
 ```
 
+### Exception handler matchers
+
+```dart
+ResultConfig.exceptionHandlerMatchers = {
+  DioError: (e) {
+    print('🟠 DIO FAIL RESULT: $e');
+    final failure = ResultOf.failWith(DioErrorResult(e as DioError));
+    return failure;
+  },
+};
+```
+
 ## Contributing
 
 We accept the following contributions:
