@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'package:fluent_result/fluent_result.dart';
+import 'package:logger/logger.dart';
 
 ///
 class ResultConfig {
@@ -13,8 +12,12 @@ class ResultConfig {
 
   ResultConfig._internal();
 
+  static final Logger _logger = Logger();
+
   static void _defaultSuccessHandler(Result result) {
-    log('🟢 Result success: ${result is ResultOf ? result.value.toString() : result.isSuccess}');
+    _logger.d(
+      '🟢 Result success: ${result is ResultOf ? result.value.toString() : result.isSuccess}',
+    );
   }
 
   static ResultOf<dynamic> _defaultExceptionHandler(dynamic e) {
@@ -29,7 +32,7 @@ class ResultConfig {
   static final Map<Type, ResultOf Function(dynamic e)>
       _defaultExceptionHandlerMatchers = {
     Exception: (e) {
-      log('🔴 $e', name: 'Result');
+      _logger.d('🔴 Failed result', e);
       return fail(e);
     },
   };

@@ -1,3 +1,7 @@
+# [7.3.0]
+
+* [Add] [Logger](https://pub.dev/packages/logger).
+
 # [7.2.0]
 
 * [Add] exception handler matchers.
