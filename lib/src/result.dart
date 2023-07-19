@@ -87,7 +87,7 @@ class Result {
   // ignore: prefer_constructors_over_static_methods
   static Result failIf(bool Function() verify, String reason) {
     if (verify()) {
-      return ResultConfig.exceptionHandler(reason);
+      return ResultConfig.exceptionHandler(reason, null);
     }
 
     return Result.ok;
@@ -97,7 +97,7 @@ class Result {
   // ignore: prefer_constructors_over_static_methods
   static Result okIf(bool Function() verify, String reason) {
     if (!verify()) {
-      return ResultConfig.exceptionHandler(reason);
+      return ResultConfig.exceptionHandler(reason, null);
     }
 
     return Result.ok;
@@ -112,11 +112,11 @@ class Result {
       final result = func();
       // ResultConfig.logResult(result);
       return result;
-    } catch (e) {
+    } catch (e, st) {
       if (onError != null) {
         return onError(e);
       }
-      return ResultConfig.exceptionHandler(e);
+      return ResultConfig.exceptionHandler(e, st);
     }
   }
 
@@ -129,11 +129,11 @@ class Result {
       final result = await func();
       // ResultConfig.logResult(result);
       return result;
-    } catch (e) {
+    } catch (e, st) {
       if (onError != null) {
         return onError(e);
       }
-      return ResultConfig.exceptionHandler(e);
+      return ResultConfig.exceptionHandler(e, st);
     }
   }
 

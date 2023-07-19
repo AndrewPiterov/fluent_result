@@ -20,19 +20,22 @@ class ResultConfig {
     );
   }
 
-  static ResultOf<dynamic> _defaultExceptionHandler(dynamic e) {
+  static ResultOf<dynamic> _defaultExceptionHandler(dynamic e, StackTrace? st) {
     if (exceptionHandlerMatchers.containsKey(e.runtimeType)) {
-      return exceptionHandlerMatchers[e.runtimeType]!(e);
+      return exceptionHandlerMatchers[e.runtimeType]!(e, st);
     }
 
-    _defaultExceptionHandlerMatchers[Exception]!(e);
+    final closure = _defaultExceptionHandlerMatchers[Exception];
+    if (closure != null) {
+      return closure(e, st);
+    }
     return fail(e);
   }
 
-  static final Map<Type, ResultOf Function(dynamic e)>
+  static final Map<Type, ResultOf Function(dynamic e, StackTrace? stackTrace)>
       _defaultExceptionHandlerMatchers = {
-    Exception: (e) {
-      _logger.d('🔴 Failed result', e);
+    Exception: (e, stackTrace) {
+      _logger.d('🔴 Failed result', e, stackTrace);
       return fail(e);
     },
   };
@@ -41,10 +44,10 @@ class ResultConfig {
   static void Function(Result result) logSuccessResult = _defaultSuccessHandler;
 
   /// Log a fail result
-  static ResultOf Function(dynamic e) exceptionHandler =
+  static ResultOf Function(dynamic e, StackTrace? st) exceptionHandler =
       _defaultExceptionHandler;
 
   ///
-  static Map<Type, ResultOf Function(dynamic e)> exceptionHandlerMatchers =
-      _defaultExceptionHandlerMatchers;
+  static Map<Type, ResultOf Function(dynamic e, StackTrace? st)>
+      exceptionHandlerMatchers = _defaultExceptionHandlerMatchers;
 }

@@ -8,7 +8,7 @@ import 'package:shouldly/shouldly.dart';
 void main() {
   given('Result config with custom error matchers', () {
     ResultConfig.exceptionHandlerMatchers = {
-      DioError: (e) {
+      DioError: (e, st) {
         // ignore: avoid_print
         print(
           '🟠 MY ERROR RESULT: $e',

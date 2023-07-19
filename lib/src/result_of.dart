@@ -46,11 +46,11 @@ class ResultOf<T> extends Result {
       final result = func();
       ResultConfig.logSuccessResult(result);
       return result;
-    } catch (e) {
+    } catch (e, st) {
       if (onError != null) {
         return onError(e);
       }
-      return ResultConfig.exceptionHandler(e).map();
+      return ResultConfig.exceptionHandler(e, st).map();
     }
   }
 
@@ -63,11 +63,11 @@ class ResultOf<T> extends Result {
       final result = await func();
       ResultConfig.logSuccessResult(result);
       return result;
-    } catch (e) {
+    } catch (e, st) {
       if (onError != null) {
         return onError(e);
       }
-      return ResultConfig.exceptionHandler(e).map();
+      return ResultConfig.exceptionHandler(e, st).map();
     }
   }
 

@@ -1,3 +1,7 @@
+# [8.0.0]
+
+* [Fix] logging stack trace.
+* [Update] dependencies.
 # [7.3.0]
 
 * [Add] [Logger](https://pub.dev/packages/logger).

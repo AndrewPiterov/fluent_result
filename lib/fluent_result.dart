@@ -1,5 +1,3 @@
-library fluent_result;
-
 export 'src/errors/errors.dart';
 export 'src/extensions.dart';
 export 'src/methods.dart';

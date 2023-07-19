@@ -13,7 +13,7 @@ void main() {
   });
 
   test('with custom exception handler', () {
-    ResultConfig.exceptionHandler = (e) {
+    ResultConfig.exceptionHandler = (e, st) {
       // ignore: avoid_print
       print(' 🟢 Fail: $e ');
       return fail(e);
@@ -28,7 +28,7 @@ void main() {
   });
 
   test('with custom exception handler when async call', () async {
-    ResultConfig.exceptionHandler = (e) {
+    ResultConfig.exceptionHandler = (e, st) {
       // ignore: avoid_print
       print(' 🟣 Fail: $e ');
       return fail(e);

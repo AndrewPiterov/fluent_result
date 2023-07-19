@@ -1,20 +1,20 @@
 name: fluent_result
 description: FluentResults is a Dart library developed to solve a common problem. It returns an object indicating success or failure of an operation instead of throwing/using exceptions.
-version: 7.3.0
+version: 8.0.0
 homepage: https://github.com/AndrewPiterov/fluent_result
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.12.0 <4.0.0'
 
 dependencies:
-  collection: ^1.16.0
-  logger: ^1.1.0
-  quiver: ^3.1.0
+  collection: ^1.17.2
+  logger: ^1.4.0
+  quiver: ^3.2.1
 
 dev_dependencies:
-  coverage: ^1.6.1
+  coverage: ^1.6.3
   equatable: ^2.0.5
-  given_when_then_unit_test: ^0.1.0
-  lint: ^2.0.1
+  given_when_then_unit_test: ^0.2.1
+  lint: ^2.1.2
   shouldly: ^0.5.0+1
-  test: ^1.21.1
+  test: ^1.24.4
