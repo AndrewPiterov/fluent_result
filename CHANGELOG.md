@@ -1,7 +1,12 @@
+# [8.1.0]
+
+* downgrade `collection: ^1.17.1`
+
 # [8.0.0]
 
 * [Fix] logging stack trace.
 * [Update] dependencies.
+
 # [7.3.0]
 
 * [Add] [Logger](https://pub.dev/packages/logger).
