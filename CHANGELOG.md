@@ -1,3 +1,7 @@
+# [8.2.0]
+
+* update `logger` dependency
+
 # [8.1.0]
 
 * downgrade `collection: ^1.17.1`

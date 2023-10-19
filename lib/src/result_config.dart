@@ -17,6 +17,7 @@ class ResultConfig {
   static void _defaultSuccessHandler(Result result) {
     _logger.d(
       '🟢 Result success: ${result is ResultOf ? result.value.toString() : result.isSuccess}',
+      time: DateTime.now(),
     );
   }
 
@@ -35,7 +36,12 @@ class ResultConfig {
   static final Map<Type, ResultOf Function(dynamic e, StackTrace? stackTrace)>
       _defaultExceptionHandlerMatchers = {
     Exception: (e, stackTrace) {
-      _logger.d('🔴 Failed result', e, stackTrace);
+      _logger.d(
+        '🔴 Failed result',
+        error: e,
+        stackTrace: stackTrace,
+        time: DateTime.now(),
+      );
       return fail(e);
     },
   };
