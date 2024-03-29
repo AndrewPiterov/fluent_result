@@ -107,6 +107,7 @@ class Result {
   factory Result.trySync(
     Result Function() func, {
     Result Function(dynamic e)? onError,
+    void Function()? onFinally,
   }) {
     try {
       final result = func();
@@ -117,6 +118,8 @@ class Result {
         return onError(e);
       }
       return ResultConfig.exceptionHandler(e, st);
+    } finally {
+      onFinally?.call();
     }
   }
 
@@ -124,6 +127,7 @@ class Result {
   static Future<Result> tryAsync(
     Future<Result> Function() func, {
     Result Function(dynamic e)? onError,
+    void Function()? onFinally,
   }) async {
     try {
       final result = await func();
@@ -134,6 +138,8 @@ class Result {
         return onError(e);
       }
       return ResultConfig.exceptionHandler(e, st);
+    } finally {
+      onFinally?.call();
     }
   }
 

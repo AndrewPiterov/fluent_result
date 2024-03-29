@@ -41,6 +41,7 @@ class ResultOf<T> extends Result {
   static ResultOf<T?> trySync<T>(
     ResultOf<T> Function() func, {
     ResultOf<T?> Function(dynamic e)? onError,
+    void Function()? onFinally,
   }) {
     try {
       final result = func();
@@ -51,6 +52,8 @@ class ResultOf<T> extends Result {
         return onError(e);
       }
       return ResultConfig.exceptionHandler(e, st).map();
+    } finally {
+      onFinally?.call();
     }
   }
 
@@ -58,6 +61,7 @@ class ResultOf<T> extends Result {
   static Future<ResultOf<T?>> tryAsync<T>(
     Future<ResultOf<T>> Function() func, {
     ResultOf<T?> Function(dynamic e)? onError,
+    void Function()? onFinally,
   }) async {
     try {
       final result = await func();
@@ -68,6 +72,8 @@ class ResultOf<T> extends Result {
         return onError(e);
       }
       return ResultConfig.exceptionHandler(e, st).map();
+    } finally {
+      onFinally?.call();
     }
   }
 

@@ -1,3 +1,8 @@
+# [8.3.0]
+
+* add `onFinally` method to `ResultOf` and `Result`
+* update `logger` dependency to `^2.2.0`
+
 # [8.2.0]
 
 * update `logger` dependency
