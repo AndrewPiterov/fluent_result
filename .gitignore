@@ -73,3 +73,6 @@ build/
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 coverage
+
+# Mine
+pubspec.lock

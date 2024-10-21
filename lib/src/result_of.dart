@@ -39,7 +39,7 @@ class ResultOf<T> extends Result {
 
   /// Wrapped on try/catch
   static ResultOf<T?> trySync<T>(
-    ResultOf<T> Function() func, {
+    ResultOf<T?> Function() func, {
     ResultOf<T?> Function(dynamic e)? onError,
     void Function()? onFinally,
   }) {
@@ -59,7 +59,7 @@ class ResultOf<T> extends Result {
 
   /// Wrapped on try/catch
   static Future<ResultOf<T?>> tryAsync<T>(
-    Future<ResultOf<T>> Function() func, {
+    Future<ResultOf<T?>> Function() func, {
     ResultOf<T?> Function(dynamic e)? onError,
     void Function()? onFinally,
   }) async {

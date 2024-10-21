@@ -1,3 +1,7 @@
+# [8.4.0]
+
+* [Fix] can pass `null` in `successWith(null)`
+
 # [8.3.0]
 
 * add `onFinally` method to `ResultOf` and `Result`
