@@ -85,8 +85,25 @@ class ResultOf<T> extends Result {
     if (isFail) {
       onFail(errors);
     } else {
-      onSuccess(value as T);
+      onSuccess(_successValue());
     }
+  }
+
+  /// Safely read the success [value] as a non-null [T].
+  ///
+  /// Throws a [StateError] when the result is a success but its [value] is
+  /// `null` while [T] is non-nullable — an incoherent state that previously
+  /// surfaced as an opaque `TypeError` from `value as T`. A legitimately
+  /// nullable [T] (where `null is T`) is preserved and never throws.
+  T _successValue() {
+    if (value == null && null is! T) {
+      throw StateError(
+        'ResultOf<$T> is success but its value is null. A non-nullable '
+        'success value cannot be null; use ResultOf<$T?> if a null success '
+        'value is intended.',
+      );
+    }
+    return value as T;
   }
 
   /// <summary>
@@ -102,9 +119,9 @@ class ResultOf<T> extends Result {
           'If result is success then valueConverter should not be null',
         );
       }
-      return ResultOf.success<U>(valueConverter(value as T));
+      return ResultOf.success<U>(valueConverter(_successValue()));
     }
 
-    return fail(error);
+    return ResultOf<U?>(isSuccess: false, value: null, error: errors.toList());
   }
 }

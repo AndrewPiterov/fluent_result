@@ -14,9 +14,6 @@ class ResultError {
       return ResultException(reason);
     }
 
-    if (reason is Error) {
-      // you should not process error
-    }
     if (reason is ResultError) {
       return reason;
     }

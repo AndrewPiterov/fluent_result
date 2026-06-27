@@ -152,7 +152,7 @@ class Result {
   @override
   int get hashCode => hash2(
         isSuccess.hashCode,
-        errors.hashCode,
+        hashObjects(_errors),
       );
 
   @override

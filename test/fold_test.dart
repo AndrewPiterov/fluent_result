@@ -36,7 +36,7 @@ void main() {
     );
   });
 
-  test('either left', () {
+  test('either left via top-level fail()', () {
     final res = fail([
       ResultError('some error'),
       ResultError('some error 2'),

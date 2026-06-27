@@ -3,7 +3,7 @@ import 'package:shouldly/shouldly.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('this test should fail', () {
+  test('trySync wraps a thrown String into a fail result', () {
     final result = _someFunc();
     result.isFail.should.beTrue();
   });

@@ -1,3 +1,10 @@
+# [8.4.1]
+
+* [Fix] `Result.hashCode` is now stable and contract-correct, so equal Results share a hash code and work as `Set`/`Map` keys
+* [Fix] `ResultOf.map()` no longer drops all but the first error when mapping a multi-error fail result
+* [Fix] `foldWithValue`/`map` throw a clear `StateError` instead of an opaque `TypeError` when a non-nullable success value is `null`
+* [Docs] correct README `exceptionHandlerMatchers` matcher signature, nullable `ResultOf.value`, and `Result.failWith` usage
+
 # [8.4.0]
 
 * [Fix] can pass `null` in `successWith(null)`

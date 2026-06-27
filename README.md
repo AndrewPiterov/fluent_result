@@ -43,14 +43,14 @@ Success result with value:
 ```dart
 ResultOf<MyObject> result = ResultOf.success(MyObject());
 ResultOf<MyObject> sameResult = successWith(MyObject());
-MyObject value = result.value;
+MyObject? value = result.value;
 ```
 
 Fail result with error and without value:
 
 ```dart
 ResultOf<MyObject> result = ResultOf.failWith<MyObject>(ResultError('a fail reason'));
-MyObject value = result.value; // is null because of the fail result
+MyObject? value = result.value; // is null because of the fail result
 ```
 
 ### `failIf()` and `okIf()`
@@ -156,7 +156,7 @@ For example, easy to work with errors which comes from HTTP API.
 
 ```dart
 final err1 = CustomerNotFound(customerId: 1);
-final res = Result.fail(err1);
+final res = Result.failWith(err1);
 
 final err2 = InvalidPasswordError('The password 123456 is invalid');
 res.add(err2);
@@ -169,7 +169,7 @@ res.get<InvalidPasswordError>().should.not.beNull();
 
 ```dart
 ResultConfig.exceptionHandlerMatchers = {
-  DioError: (e) {
+  DioError: (e, st) {
     print('🟠 DIO FAIL RESULT: $e');
     final failure = ResultOf.failWith(DioErrorResult(e as DioError));
     return failure;
