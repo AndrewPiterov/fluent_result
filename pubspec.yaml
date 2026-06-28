@@ -1,6 +1,6 @@
 name: fluent_result
 description: A fluent Result type for Dart that returns success/failure instead of throwing, with a global observability seam for crash reporting.
-version: 8.4.1
+version: 8.5.0
 homepage: https://github.com/AndrewPiterov/fluent_result
 repository: https://github.com/AndrewPiterov/fluent_result
 issue_tracker: https://github.com/AndrewPiterov/fluent_result/issues
