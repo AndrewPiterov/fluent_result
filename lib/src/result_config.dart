@@ -48,9 +48,12 @@ class ResultConfig {
     }
   }
 
-  /// Invoke [onSuccess] guarded, so a throwing telemetry hook can neither flip
-  /// a success into a failure nor escape `try*`.
+  /// Invoke [onSuccess] for a successful [result], guarded so a throwing
+  /// telemetry hook can neither flip a success into a failure nor escape
+  /// `try*`. A `try*`/`trySync` body that simply RETURNS an [Err] (without
+  /// throwing) is not a success, so [onSuccess] does not fire for it.
   static void notifySuccess(Result<dynamic> result) {
+    if (!result.isSuccess) return;
     try {
       onSuccess(result);
     } catch (e, st) {
@@ -70,14 +73,15 @@ class ResultConfig {
   }
 
   /// Build the [ResultError] payload for a caught [error]: the [matched]
-  /// matcher's build, else [failBuilder].
+  /// matcher's build, else `ResultError.of(error, stack)` (which preserves the
+  /// captured [stack] on the resulting error).
   static ResultError buildError(
     Object error,
     StackTrace? stack,
     ResultMatcher? matched,
   ) {
     if (matched != null) return matched.build(error, stack);
-    return failBuilder(error);
+    return ResultError.of(error, stack);
   }
 
   /// Run [onFinally] guarded, routing any throw through [safeReport].

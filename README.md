@@ -147,6 +147,7 @@ ResultConfig.matchers = [
 | `result.value!` / `result.value` | pattern matching, `valueOrNull`, or `valueOr` |
 | `void fold({onFail, onSuccess})` | value-returning `fold((v) => …, (e) => …)` / `match(onOk:, onErr:)` |
 | `result.map<U>()` (fail passthrough) | `Err.cast<R>()` (or just keep `map`/`flatMap`, which pass `Err` through) |
+| `getOrElse(() => x)` / `recover((errors) => x)` | now receive the error: `getOrElse((e) => x)` / `recover((e) => x)` |
 | `ResultConfig.exceptionHandler` | `ResultConfig.onException` (move reporting here) |
 | `ResultConfig.exceptionHandlerMatchers` (map) | `ResultConfig.matchers` (list of `ResultMatcher`) |
 | `ResultConfig.logSuccessResult` | `ResultConfig.onSuccess` |

@@ -55,7 +55,7 @@ sealed class Result<T> {
         return Err<T>(ResultConfig.buildError(e, st, matched));
       } catch (handlerError, handlerSt) {
         ResultConfig.safeReport(handlerError, handlerSt);
-        return Err<T>(ResultConfig.failBuilder(e));
+        return Err<T>(ResultError.of(e, st));
       }
     } finally {
       ResultConfig.guardFinally(onFinally);
@@ -83,7 +83,7 @@ sealed class Result<T> {
         return Err<T>(ResultConfig.buildError(e, st, matched));
       } catch (handlerError, handlerSt) {
         ResultConfig.safeReport(handlerError, handlerSt);
-        return Err<T>(ResultConfig.failBuilder(e));
+        return Err<T>(ResultError.of(e, st));
       }
     } finally {
       ResultConfig.guardFinally(onFinally);
@@ -127,12 +127,13 @@ sealed class Result<T> {
       verify() ? success() : Err<void>(ResultConfig.failBuilder(reason));
 }
 
-/// A successful [Result] carrying a non-null [value].
+/// A successful [Result] carrying a [value].
 final class Ok<T> extends Result<T> {
   /// Creates a success carrying [value].
   const Ok(this.value);
 
-  /// The success value (never null).
+  /// The success value. Non-null when [T] is non-nullable (the common case);
+  /// for a nullable [T] it may be null.
   final T value;
 
   @override
