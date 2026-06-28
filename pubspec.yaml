@@ -4,12 +4,10 @@ version: 8.4.1
 homepage: https://github.com/AndrewPiterov/fluent_result
 
 environment:
-  sdk: '>=2.12.0 <4.0.0'
+  sdk: '>=2.14.0 <4.0.0'
 
 dependencies:
   collection: ^1.17.1
-  logger: ^2.2.0
-  quiver: ^3.2.1
 
 dev_dependencies:
   coverage: ^1.7.2

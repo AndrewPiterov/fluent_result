@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:fluent_result/fluent_result.dart';
-import 'package:quiver/core.dart';
 
 final _eq = const ListEquality().equals;
 
@@ -170,10 +169,7 @@ class Result {
       _eq(other.errors, errors);
 
   @override
-  int get hashCode => hash2(
-        isSuccess.hashCode,
-        hashObjects(_errors),
-      );
+  int get hashCode => Object.hash(isSuccess, Object.hashAll(_errors));
 
   @override
   String toString() =>

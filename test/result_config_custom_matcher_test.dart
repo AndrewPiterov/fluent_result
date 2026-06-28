@@ -6,6 +6,8 @@ import 'package:given_when_then_unit_test/res/when.dart';
 import 'package:shouldly/shouldly.dart';
 
 void main() {
+  after(ResultConfig.reset);
+
   given('Result config with custom error matchers', () {
     ResultConfig.exceptionHandlerMatchers = {
       DioError: (e, st) {
