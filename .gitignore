@@ -76,3 +76,6 @@ coverage
 
 # Mine
 pubspec.lock
+
+# AI planning/workflow artifacts (kept local, not tracked)
+docs/superpowers/
