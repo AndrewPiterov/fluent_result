@@ -193,4 +193,67 @@ class ResultOf<T> extends Result {
 
     return ResultOf<U?>(isSuccess: false, value: null, error: errors.toList());
   }
+
+  /// Chain a successful value into another [ResultOf]. On a fail, [next] is not
+  /// called and ALL errors pass through unchanged.
+  ResultOf<U?> flatMap<U>(ResultOf<U?> Function(T value) next) {
+    if (isFail) {
+      return ResultOf<U?>(
+        isSuccess: false,
+        value: null,
+        error: errors.toList(),
+      );
+    }
+    return next(_successValue());
+  }
+
+  /// Async counterpart to [flatMap].
+  Future<ResultOf<U?>> flatMapAsync<U>(
+    Future<ResultOf<U?>> Function(T value) next,
+  ) async {
+    if (isFail) {
+      return ResultOf<U?>(
+        isSuccess: false,
+        value: null,
+        error: errors.toList(),
+      );
+    }
+    return next(_successValue());
+  }
+
+  /// Collapse this result into a single value of type [R] by handling both
+  /// branches. The value-returning counterpart to [foldWithValue].
+  R match<R>({
+    required R Function(List<ResultError> errors) onFail,
+    required R Function(T value) onSuccess,
+  }) {
+    return isFail ? onFail(errors) : onSuccess(_successValue());
+  }
+
+  /// The success value, or [fallback] when this is a fail.
+  T valueOr(T fallback) => isFail ? fallback : _successValue();
+
+  /// The success value, or the result of [orElse] when this is a fail.
+  T getOrElse(T Function() orElse) => isFail ? orElse() : _successValue();
+
+  /// Turn a fail into a recovered success via [recovery]. A success passes
+  /// through unchanged.
+  ResultOf<T?> recover(T Function(List<ResultError> errors) recovery) {
+    if (isSuccess) {
+      return ResultOf<T?>(isSuccess: true, value: value);
+    }
+    return ResultOf<T?>(isSuccess: true, value: recovery(errors));
+  }
+
+  /// Transform EVERY error 1:1, preserving the full error bag. No-op on success.
+  ResultOf<T?> mapError(ResultError Function(ResultError error) transform) {
+    if (isSuccess) {
+      return ResultOf<T?>(isSuccess: true, value: value);
+    }
+    return ResultOf<T?>(
+      isSuccess: false,
+      value: null,
+      error: errors.map(transform).toList(),
+    );
+  }
 }
