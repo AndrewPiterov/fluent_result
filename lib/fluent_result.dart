@@ -1,3 +1,4 @@
+export 'src/combinators.dart';
 export 'src/errors/errors.dart';
 export 'src/methods.dart';
 export 'src/result.dart';
