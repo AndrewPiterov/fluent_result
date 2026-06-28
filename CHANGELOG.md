@@ -10,12 +10,14 @@
 * [Change] `fail`/`failWith` return `ResultOf<T>` (was `ResultOf<T?>`) — covariant, non-breaking.
 * [Change] Caught and successful results are no longer logged by default; the default `exceptionHandlerMatchers` is now empty.
 * [Change] SDK lower bound raised to `>=2.14.0`.
-* [Deprecate] `exceptionHandler`, `exceptionHandlerMatchers`, `logSuccessResult` — kept as functional aliases.
+* [Deprecate] `exceptionHandler`, `exceptionHandlerMatchers`, `logSuccessResult` — still honored, but prefer `onException` + `matchers` + `onSuccess`.
 * [Remove] `logger` and `quiver` dependencies.
+* [Docs] add a runnable `example/`, fill the public API dartdoc, and add pub.dev metadata (`topics`, `repository`, `issue_tracker`, corrected `description`).
 
 #### Migration
 
 * If your `ResultConfig.exceptionHandler` reported errors itself, move that reporting into `ResultConfig.onException` to avoid double-reporting.
+* `failIf`/`okIf` now route through `ResultConfig.failBuilder` instead of `exceptionHandler`; if you customized `exceptionHandler` to shape their output, set `failBuilder` instead.
 * For `Error`-derived third-party exceptions (e.g. `DioError extends Error`), match with `(e) => e is Error` — the `e is Exception` catch-all does not match them.
 
 # [8.4.1]

@@ -135,7 +135,7 @@ final anotherResult = failResult.map<Customer>();
 // chain a success into another Result (errors pass through on a fail)
 final r = successWith(2).flatMap((v) => successWith(v * 10)); // ResultOf(20)
 
-// collapse into a value (the value-returning counterpart to fold)
+// collapse into a value (the value-returning counterpart to foldWithValue)
 final label = r.match(
   onFail: (errors) => 'failed: ${errors.first.message}',
   onSuccess: (value) => 'ok: $value',
@@ -201,7 +201,7 @@ res.get<InvalidPasswordError>().should.not.beNull();
 `fluent_result` keeps two error paths separate:
 
 - **Validation** (`failIf` / `okIf`) — deliberate, expected failures. These are **never** reported.
-- **Caught exceptions** (`trySync` / `tryAsync` / `guard`) — unexpected throws. These are reported **once** to `ResultConfig.onException`.
+- **Caught exceptions** (`trySync` / `tryAsync` / `guard` / `guardAsync`) — unexpected throws. These are reported **once** to `ResultConfig.onException`.
 
 Wire your crash reporter once at startup (no-op by default, so nothing is reported until you do):
 

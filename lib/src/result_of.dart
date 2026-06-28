@@ -52,7 +52,7 @@ class ResultOf<T> extends Result {
   }) {
     try {
       final result = func();
-      ResultConfig.onSuccess(result);
+      ResultConfig.notifySuccess(result);
       return result;
     } catch (e, st) {
       final matched = ResultConfig.classify(e);
@@ -79,7 +79,7 @@ class ResultOf<T> extends Result {
   }) async {
     try {
       final result = await func();
-      ResultConfig.onSuccess(result);
+      ResultConfig.notifySuccess(result);
       return result;
     } catch (e, st) {
       final matched = ResultConfig.classify(e);
@@ -237,7 +237,7 @@ class ResultOf<T> extends Result {
   /// through unchanged.
   ResultOf<T?> recover(T Function(List<ResultError> errors) recovery) {
     if (isSuccess) {
-      return ResultOf<T?>(isSuccess: true, value: value);
+      return ResultOf<T?>(isSuccess: true, value: _successValue());
     }
     return ResultOf<T?>(isSuccess: true, value: recovery(errors));
   }
@@ -245,7 +245,7 @@ class ResultOf<T> extends Result {
   /// Transform EVERY error 1:1, preserving the full error bag. No-op on success.
   ResultOf<T?> mapError(ResultError Function(ResultError error) transform) {
     if (isSuccess) {
-      return ResultOf<T?>(isSuccess: true, value: value);
+      return ResultOf<T?>(isSuccess: true, value: _successValue());
     }
     return ResultOf<T?>(
       isSuccess: false,

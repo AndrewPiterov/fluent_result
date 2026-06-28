@@ -37,7 +37,7 @@ void main() {
           'should show formatted Dio message': () {
             // ignore: avoid_print
             print((res.error! as DioErrorResult).formattedMessage);
-          }
+          },
         },
       );
     });

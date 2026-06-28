@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:fluent_result/fluent_result.dart';
 
 /// Global, process-wide configuration for `fluent_result`.
@@ -9,7 +8,14 @@ import 'package:fluent_result/fluent_result.dart';
 /// unexpected exceptions exactly once. Wire your crash reporter via
 /// [onException]. Call [reset] in test `tearDown` to avoid cross-test leakage.
 class ResultConfig {
+  /// `ResultConfig` is a static-only configuration holder. This constructor
+  /// exists only for backward compatibility and returns a shared instance with
+  /// no usable instance API — use the static members directly.
+  factory ResultConfig() => _instance;
+
   ResultConfig._();
+
+  static final ResultConfig _instance = ResultConfig._();
 
   /// Report hook for UNEXPECTED caught exceptions. No-op by default.
   /// Wire your crash reporter here, e.g. `Sentry.captureException`.
@@ -56,8 +62,20 @@ class ResultConfig {
       onSuccess = handler;
 
   /// The first matcher whose [ResultMatcher.test] accepts [error], else null.
-  static ResultMatcher? classify(Object error) =>
-      matchers.firstWhereOrNull((m) => m.test(error));
+  ///
+  /// A throwing predicate must never break error handling nor hide the original
+  /// error: a matcher whose [ResultMatcher.test] throws is reported via
+  /// [safeReport] and skipped, and classification continues with the next one.
+  static ResultMatcher? classify(Object error) {
+    for (final matcher in matchers) {
+      try {
+        if (matcher.test(error)) return matcher;
+      } catch (testError, testStack) {
+        safeReport(testError, testStack);
+      }
+    }
+    return null;
+  }
 
   /// Invoke [onException] guarded, so a throwing reporter never escapes.
   static void safeReport(Object error, StackTrace? stack) {
@@ -65,6 +83,16 @@ class ResultConfig {
       onException(error, stack);
     } catch (_) {
       // Never let the reporter mask the original error.
+    }
+  }
+
+  /// Invoke [onSuccess] guarded, so a throwing telemetry hook can never flip a
+  /// successful result into a failure.
+  static void notifySuccess(Result result) {
+    try {
+      onSuccess(result);
+    } catch (e, st) {
+      safeReport(e, st);
     }
   }
 

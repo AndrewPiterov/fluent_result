@@ -117,7 +117,7 @@ class Result {
   }) {
     try {
       final result = func();
-      ResultConfig.onSuccess(result);
+      ResultConfig.notifySuccess(result);
       return result;
     } catch (e, st) {
       final matched = ResultConfig.classify(e);
@@ -144,7 +144,7 @@ class Result {
   }) async {
     try {
       final result = await func();
-      ResultConfig.onSuccess(result);
+      ResultConfig.notifySuccess(result);
       return result;
     } catch (e, st) {
       final matched = ResultConfig.classify(e);
