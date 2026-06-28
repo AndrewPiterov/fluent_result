@@ -2,7 +2,7 @@ import 'package:fluent_result/fluent_result.dart';
 
 /// Generic version of `Result` that holds value
 class ResultOf<T> extends Result {
-  ///
+  /// Creates a result with the given [isSuccess] state, [value] and [error]s.
   ResultOf({
     required bool isSuccess,
     required this.value,
@@ -27,53 +27,122 @@ class ResultOf<T> extends Result {
   /// ```dart
   /// ResultOf.failWith('fail reason');
   /// ```
-  static ResultOf<T?> failWith<T>(dynamic reason) {
+  static ResultOf<T> failWith<T>(dynamic reason) {
     final List reasons = reason is Iterable ? reason.toList().cast() : [reason];
 
-    return ResultOf(
+    return ResultOf<T>(
       isSuccess: false,
       value: null,
       error: reasons.map((e) => ResultError.of(e)).toList(),
     );
   }
 
-  /// Wrapped on try/catch
+  /// Wrapped on try/catch.
+  ///
+  /// On a thrown error, an unexpected exception is reported once via
+  /// `ResultConfig.onException` (matcher-`expected` errors are not), then the
+  /// fail result is built. [onErrorWithStack] takes precedence over [onError].
+  /// Never rethrows: a throwing handler is reported and falls back to a plain
+  /// fail of the original error.
   static ResultOf<T?> trySync<T>(
     ResultOf<T?> Function() func, {
     ResultOf<T?> Function(dynamic e)? onError,
+    ResultOf<T?> Function(Object e, StackTrace st)? onErrorWithStack,
     void Function()? onFinally,
   }) {
     try {
       final result = func();
-      ResultConfig.logSuccessResult(result);
+      ResultConfig.notifySuccess(result);
       return result;
     } catch (e, st) {
-      if (onError != null) {
-        return onError(e);
+      final matched = ResultConfig.classify(e);
+      ResultConfig.reportIfUnexpected(e, st, matched);
+      try {
+        if (onErrorWithStack != null) return onErrorWithStack(e, st);
+        if (onError != null) return onError(e);
+        return ResultConfig.buildFailResult(e, st, matched).map();
+      } catch (handlerError, handlerSt) {
+        ResultConfig.safeReport(handlerError, handlerSt);
+        return ResultConfig.failBuilder(e).map();
       }
-      return ResultConfig.exceptionHandler(e, st).map();
     } finally {
-      onFinally?.call();
+      ResultConfig.guardFinally(onFinally);
     }
   }
 
-  /// Wrapped on try/catch
+  /// Wrapped on try/catch. See [ResultOf.trySync] for the error semantics.
   static Future<ResultOf<T?>> tryAsync<T>(
     Future<ResultOf<T?>> Function() func, {
     ResultOf<T?> Function(dynamic e)? onError,
+    ResultOf<T?> Function(Object e, StackTrace st)? onErrorWithStack,
     void Function()? onFinally,
   }) async {
     try {
       final result = await func();
-      ResultConfig.logSuccessResult(result);
+      ResultConfig.notifySuccess(result);
       return result;
     } catch (e, st) {
-      if (onError != null) {
-        return onError(e);
+      final matched = ResultConfig.classify(e);
+      ResultConfig.reportIfUnexpected(e, st, matched);
+      try {
+        if (onErrorWithStack != null) return onErrorWithStack(e, st);
+        if (onError != null) return onError(e);
+        return ResultConfig.buildFailResult(e, st, matched).map();
+      } catch (handlerError, handlerSt) {
+        ResultConfig.safeReport(handlerError, handlerSt);
+        return ResultConfig.failBuilder(e).map();
       }
-      return ResultConfig.exceptionHandler(e, st).map();
     } finally {
-      onFinally?.call();
+      ResultConfig.guardFinally(onFinally);
+    }
+  }
+
+  /// Wrap a plain, possibly-throwing [body] into a [ResultOf]. Unlike
+  /// `trySync`, [body] returns a bare value, not a pre-lifted Result. A throw
+  /// is reported via `ResultConfig.onException` (unless a matcher flags it
+  /// expected) and converted to a fail; the call never rethrows.
+  static ResultOf<T?> guard<T>(
+    T Function() body, {
+    ResultOf<T?> Function(Object e, StackTrace st)? onError,
+    void Function()? onFinally,
+  }) {
+    try {
+      return ResultOf<T?>(isSuccess: true, value: body());
+    } catch (e, st) {
+      final matched = ResultConfig.classify(e);
+      ResultConfig.reportIfUnexpected(e, st, matched);
+      try {
+        if (onError != null) return onError(e, st);
+        return ResultConfig.buildFailResult(e, st, matched).map();
+      } catch (handlerError, handlerSt) {
+        ResultConfig.safeReport(handlerError, handlerSt);
+        return ResultConfig.failBuilder(e).map();
+      }
+    } finally {
+      ResultConfig.guardFinally(onFinally);
+    }
+  }
+
+  /// Async counterpart to [guard]; wraps a `Future`-returning [body].
+  static Future<ResultOf<T?>> guardAsync<T>(
+    Future<T> Function() body, {
+    ResultOf<T?> Function(Object e, StackTrace st)? onError,
+    void Function()? onFinally,
+  }) async {
+    try {
+      return ResultOf<T?>(isSuccess: true, value: await body());
+    } catch (e, st) {
+      final matched = ResultConfig.classify(e);
+      ResultConfig.reportIfUnexpected(e, st, matched);
+      try {
+        if (onError != null) return onError(e, st);
+        return ResultConfig.buildFailResult(e, st, matched).map();
+      } catch (handlerError, handlerSt) {
+        ResultConfig.safeReport(handlerError, handlerSt);
+        return ResultConfig.failBuilder(e).map();
+      }
+    } finally {
+      ResultConfig.guardFinally(onFinally);
     }
   }
 
@@ -106,12 +175,9 @@ class ResultOf<T> extends Result {
     return value as T;
   }
 
-  /// <summary>
-  /// Convert result with value to result with another value. Use valueConverter
-  /// parameter to specify the value transformation logic.
-  ///
-  /// No need valueConverter for Fail result. But for Success you should define it.
-  /// </summary>
+  /// Transform a success value with [valueConverter], producing a new
+  /// `ResultOf`. The converter is required for a success; on a fail the errors
+  /// pass through unchanged and no converter is needed.
   ResultOf<U?> map<U>([U Function(T)? valueConverter]) {
     if (isSuccess) {
       if (valueConverter == null) {
@@ -123,5 +189,68 @@ class ResultOf<T> extends Result {
     }
 
     return ResultOf<U?>(isSuccess: false, value: null, error: errors.toList());
+  }
+
+  /// Chain a successful value into another [ResultOf]. On a fail, [next] is not
+  /// called and ALL errors pass through unchanged.
+  ResultOf<U?> flatMap<U>(ResultOf<U?> Function(T value) next) {
+    if (isFail) {
+      return ResultOf<U?>(
+        isSuccess: false,
+        value: null,
+        error: errors.toList(),
+      );
+    }
+    return next(_successValue());
+  }
+
+  /// Async counterpart to [flatMap].
+  Future<ResultOf<U?>> flatMapAsync<U>(
+    Future<ResultOf<U?>> Function(T value) next,
+  ) async {
+    if (isFail) {
+      return ResultOf<U?>(
+        isSuccess: false,
+        value: null,
+        error: errors.toList(),
+      );
+    }
+    return next(_successValue());
+  }
+
+  /// Collapse this result into a single value of type [R] by handling both
+  /// branches. The value-returning counterpart to [foldWithValue].
+  R match<R>({
+    required R Function(List<ResultError> errors) onFail,
+    required R Function(T value) onSuccess,
+  }) {
+    return isFail ? onFail(errors) : onSuccess(_successValue());
+  }
+
+  /// The success value, or [fallback] when this is a fail.
+  T valueOr(T fallback) => isFail ? fallback : _successValue();
+
+  /// The success value, or the result of [orElse] when this is a fail.
+  T getOrElse(T Function() orElse) => isFail ? orElse() : _successValue();
+
+  /// Turn a fail into a recovered success via [recovery]. A success passes
+  /// through unchanged.
+  ResultOf<T?> recover(T Function(List<ResultError> errors) recovery) {
+    if (isSuccess) {
+      return ResultOf<T?>(isSuccess: true, value: _successValue());
+    }
+    return ResultOf<T?>(isSuccess: true, value: recovery(errors));
+  }
+
+  /// Transform EVERY error 1:1, preserving the full error bag. No-op on success.
+  ResultOf<T?> mapError(ResultError Function(ResultError error) transform) {
+    if (isSuccess) {
+      return ResultOf<T?>(isSuccess: true, value: _successValue());
+    }
+    return ResultOf<T?>(
+      isSuccess: false,
+      value: null,
+      error: errors.map(transform).toList(),
+    );
   }
 }

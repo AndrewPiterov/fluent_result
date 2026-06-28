@@ -6,6 +6,8 @@ import 'package:given_when_then_unit_test/res/when.dart';
 import 'package:shouldly/shouldly.dart';
 
 void main() {
+  after(ResultConfig.reset);
+
   given('Result config with custom error matchers', () {
     ResultConfig.exceptionHandlerMatchers = {
       DioError: (e, st) {
@@ -35,7 +37,7 @@ void main() {
           'should show formatted Dio message': () {
             // ignore: avoid_print
             print((res.error! as DioErrorResult).formattedMessage);
-          }
+          },
         },
       );
     });

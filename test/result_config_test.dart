@@ -3,6 +3,8 @@ import 'package:shouldly/shouldly.dart';
 import 'package:test/test.dart' hide fail;
 
 void main() {
+  tearDown(ResultConfig.reset);
+
   test('with default exception handler', () {
     final res = Result.trySync(() {
       throw 'Some exception';

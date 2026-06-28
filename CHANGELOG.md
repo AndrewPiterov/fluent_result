@@ -1,3 +1,25 @@
+# [8.5.0]
+
+* [Add] Global observability seam `ResultConfig.onException` (no-op by default) — the single place to wire crash reporting (e.g. Sentry). Unexpected caught exceptions are reported exactly once.
+* [Add] `ResultMatcher` + `ResultConfig.matchers`: ordered, subtype-aware error classification with an `expected` flag (expected errors are never reported).
+* [Add] `ResultConfig.onSuccess`, `failBuilder`, and `reset()` (call in test `tearDown` to avoid global-config leakage).
+* [Add] `onErrorWithStack` parameter on `trySync`/`tryAsync`.
+* [Add] `ResultOf.guard`/`guardAsync` to wrap a plain value-returning body.
+* [Add] Combinators on `ResultOf<T>`: `flatMap`, `flatMapAsync`, `match`, `valueOr`, `getOrElse`, `recover`, `mapError`.
+* [Change] `failIf`/`okIf` route through `failBuilder` — validation failures are never reported.
+* [Change] `fail`/`failWith` return `ResultOf<T>` (was `ResultOf<T?>`) — covariant, non-breaking.
+* [Change] Caught and successful results are no longer logged by default; the default `exceptionHandlerMatchers` is now empty.
+* [Change] SDK lower bound raised to `>=2.14.0`.
+* [Deprecate] `exceptionHandler`, `exceptionHandlerMatchers`, `logSuccessResult` — still honored, but prefer `onException` + `matchers` + `onSuccess`.
+* [Remove] `logger` and `quiver` dependencies.
+* [Docs] add a runnable `example/`, fill the public API dartdoc, and add pub.dev metadata (`topics`, `repository`, `issue_tracker`, corrected `description`).
+
+#### Migration
+
+* If your `ResultConfig.exceptionHandler` reported errors itself, move that reporting into `ResultConfig.onException` to avoid double-reporting.
+* `failIf`/`okIf` now route through `ResultConfig.failBuilder` instead of `exceptionHandler`; if you customized `exceptionHandler` to shape their output, set `failBuilder` instead.
+* For `Error`-derived third-party exceptions (e.g. `DioError extends Error`), match with `(e) => e is Error` — the `e is Exception` catch-all does not match them.
+
 # [8.4.1]
 
 * [Fix] `Result.hashCode` is now stable and contract-correct, so equal Results share a hash code and work as `Set`/`Map` keys
