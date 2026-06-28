@@ -97,6 +97,55 @@ class ResultOf<T> extends Result {
     }
   }
 
+  /// Wrap a plain, possibly-throwing [body] into a [ResultOf]. Unlike
+  /// `trySync`, [body] returns a bare value, not a pre-lifted Result. A throw
+  /// is reported via `ResultConfig.onException` (unless a matcher flags it
+  /// expected) and converted to a fail; the call never rethrows.
+  static ResultOf<T?> guard<T>(
+    T Function() body, {
+    ResultOf<T?> Function(Object e, StackTrace st)? onError,
+    void Function()? onFinally,
+  }) {
+    try {
+      return ResultOf<T?>(isSuccess: true, value: body());
+    } catch (e, st) {
+      final matched = ResultConfig.classify(e);
+      ResultConfig.reportIfUnexpected(e, st, matched);
+      try {
+        if (onError != null) return onError(e, st);
+        return ResultConfig.buildFailResult(e, st, matched).map();
+      } catch (handlerError, handlerSt) {
+        ResultConfig.safeReport(handlerError, handlerSt);
+        return ResultConfig.failBuilder(e).map();
+      }
+    } finally {
+      ResultConfig.guardFinally(onFinally);
+    }
+  }
+
+  /// Async counterpart to [guard]; wraps a `Future`-returning [body].
+  static Future<ResultOf<T?>> guardAsync<T>(
+    Future<T> Function() body, {
+    ResultOf<T?> Function(Object e, StackTrace st)? onError,
+    void Function()? onFinally,
+  }) async {
+    try {
+      return ResultOf<T?>(isSuccess: true, value: await body());
+    } catch (e, st) {
+      final matched = ResultConfig.classify(e);
+      ResultConfig.reportIfUnexpected(e, st, matched);
+      try {
+        if (onError != null) return onError(e, st);
+        return ResultConfig.buildFailResult(e, st, matched).map();
+      } catch (handlerError, handlerSt) {
+        ResultConfig.safeReport(handlerError, handlerSt);
+        return ResultConfig.failBuilder(e).map();
+      }
+    } finally {
+      ResultConfig.guardFinally(onFinally);
+    }
+  }
+
   /// Fold the `result`
   void foldWithValue({
     required Function(List<ResultError> errors) onFail,
