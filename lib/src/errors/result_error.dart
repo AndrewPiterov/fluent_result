@@ -1,34 +1,51 @@
-import 'package:fluent_result/fluent_result.dart';
-
-/// Base Result Error object
+/// A failure reason carried by an [Err].
+///
+/// [message] is human-readable. [code] is an optional stable identifier.
+/// [cause] is the original thrown object (if any). [stackTrace] is the captured
+/// trace (if any). Equality includes [runtimeType], so distinct subtypes with
+/// the same [message] are not equal.
 class ResultError {
-  /// Creates an error described by [message].
-  const ResultError(this.message);
+  /// Creates a result error.
+  const ResultError(
+    this.message, {
+    this.code,
+    this.cause,
+    this.stackTrace,
+  });
 
-  /// Error message
+  /// Builds a [ResultError] from an arbitrary [reason]. A [ResultError] is
+  /// returned as-is; any other value becomes [message] via `toString()` and is
+  /// kept as [cause].
+  factory ResultError.of(Object reason, [StackTrace? stackTrace]) {
+    if (reason is ResultError) return reason;
+    return ResultError(
+      reason.toString(),
+      cause: reason,
+      stackTrace: stackTrace,
+    );
+  }
+
+  /// Human-readable failure message.
   final String message;
 
-  /// Normalizes any [reason] into a [ResultError]: an [Exception] becomes a
-  /// [ResultException], an existing [ResultError] passes through, and anything
-  /// else is stringified.
-  factory ResultError.of(dynamic reason) {
-    if (reason is Exception) {
-      return ResultException(reason);
-    }
+  /// Optional stable error code.
+  final String? code;
 
-    if (reason is ResultError) {
-      return reason;
-    }
+  /// The original thrown object, if this error wraps one.
+  final Object? cause;
 
-    return ResultError(reason.toString());
-  }
+  /// The captured stack trace, if any.
+  final StackTrace? stackTrace;
 
   @override
   bool operator ==(Object other) =>
-      other is ResultError && other.message == message;
+      other is ResultError &&
+      other.runtimeType == runtimeType &&
+      other.message == message &&
+      other.code == code;
 
   @override
-  int get hashCode => message.hashCode;
+  int get hashCode => Object.hash(runtimeType, message, code);
 
   @override
   String toString() => 'ResultError: $message';
