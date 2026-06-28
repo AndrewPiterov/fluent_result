@@ -37,43 +37,63 @@ class ResultOf<T> extends Result {
     );
   }
 
-  /// Wrapped on try/catch
+  /// Wrapped on try/catch.
+  ///
+  /// On a thrown error, an unexpected exception is reported once via
+  /// `ResultConfig.onException` (matcher-`expected` errors are not), then the
+  /// fail result is built. [onErrorWithStack] takes precedence over [onError].
+  /// Never rethrows: a throwing handler is reported and falls back to a plain
+  /// fail of the original error.
   static ResultOf<T?> trySync<T>(
     ResultOf<T?> Function() func, {
     ResultOf<T?> Function(dynamic e)? onError,
+    ResultOf<T?> Function(Object e, StackTrace st)? onErrorWithStack,
     void Function()? onFinally,
   }) {
     try {
       final result = func();
-      ResultConfig.logSuccessResult(result);
+      ResultConfig.onSuccess(result);
       return result;
     } catch (e, st) {
-      if (onError != null) {
-        return onError(e);
+      final matched = ResultConfig.classify(e);
+      ResultConfig.reportIfUnexpected(e, st, matched);
+      try {
+        if (onErrorWithStack != null) return onErrorWithStack(e, st);
+        if (onError != null) return onError(e);
+        return ResultConfig.buildFailResult(e, st, matched).map();
+      } catch (handlerError, handlerSt) {
+        ResultConfig.safeReport(handlerError, handlerSt);
+        return ResultConfig.failBuilder(e).map();
       }
-      return ResultConfig.exceptionHandler(e, st).map();
     } finally {
-      onFinally?.call();
+      ResultConfig.guardFinally(onFinally);
     }
   }
 
-  /// Wrapped on try/catch
+  /// Wrapped on try/catch. See [ResultOf.trySync] for the error semantics.
   static Future<ResultOf<T?>> tryAsync<T>(
     Future<ResultOf<T?>> Function() func, {
     ResultOf<T?> Function(dynamic e)? onError,
+    ResultOf<T?> Function(Object e, StackTrace st)? onErrorWithStack,
     void Function()? onFinally,
   }) async {
     try {
       final result = await func();
-      ResultConfig.logSuccessResult(result);
+      ResultConfig.onSuccess(result);
       return result;
     } catch (e, st) {
-      if (onError != null) {
-        return onError(e);
+      final matched = ResultConfig.classify(e);
+      ResultConfig.reportIfUnexpected(e, st, matched);
+      try {
+        if (onErrorWithStack != null) return onErrorWithStack(e, st);
+        if (onError != null) return onError(e);
+        return ResultConfig.buildFailResult(e, st, matched).map();
+      } catch (handlerError, handlerSt) {
+        ResultConfig.safeReport(handlerError, handlerSt);
+        return ResultConfig.failBuilder(e).map();
       }
-      return ResultConfig.exceptionHandler(e, st).map();
     } finally {
-      onFinally?.call();
+      ResultConfig.guardFinally(onFinally);
     }
   }
 
