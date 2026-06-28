@@ -1,209 +1,114 @@
 # fluent_result
 
-
 [![pub package](https://img.shields.io/pub/v/fluent_result.svg?label=fluent_result&color=blue)](https://pub.dev/packages/fluent_result)
-[![codecov](https://codecov.io/gh/AndrewPiterov/fluent_result/branch/main/graph/badge.svg?token=VM9LTJXGQS)](https://codecov.io/gh/AndrewPiterov/fluent_result)
 [![likes](https://img.shields.io/pub/likes/fluent_result)](https://pub.dev/packages/fluent_result/score)
 [![style: lint](https://img.shields.io/badge/style-lint-4BC0F5.svg)](https://pub.dev/packages/lint)
 [![Dart](https://github.com/AndrewPiterov/fluent_result/actions/workflows/dart.yml/badge.svg)](https://github.com/AndrewPiterov/fluent_result/actions/workflows/dart.yml)
 
-`fluent_result` is a lightweight Dart library developed to solve a common problem. It returns an object indicating success or failure of an operation instead of throwing/using exceptions.
+`fluent_result` returns a value describing the success or failure of an operation instead of throwing. Since **9.0.0** the core is a **Dart 3 sealed** `Result<T>` — `Ok<T>` (with a non-null value) or `Err<T>` (with a single `ResultError`) — so the compiler enforces exhaustive handling and success values are never null.
 
-- Store multiple errors in one Result object
-- Store powerful and elaborative Error object instead of only error messages in string format
-- Designing Errors in an object-oriented way
+- A sealed `Result<T>` with `Ok<T>` / `Err<T>` and exhaustive `switch`.
+- A **non-null** `Ok.value` — no more `value!`.
+- A global `onException` seam to wire crash reporting (e.g. Sentry) in one place.
+- Zero runtime dependencies; SDK `>=3.0.0`.
 
-## Usage
+> Migrating from 8.x? See [Migration (8.5 → 9.0)](#migration-85--90) at the bottom.
 
-### Creating a `Result`
-
-Create a result which indicates success
+## Creating a result
 
 ```dart
-Result result = Result.success();
-Result sameResult = Result.ok;
-Result sameResult2 = success();
+Result<void> ok = success();          // value-free success (Result<void>)
+Result<int> okValue = successWith(7); // success carrying a value
+Result<int> failed = fail('boom');    // failure from any Object / Exception / ResultError
+
+// The variants are also constructible directly:
+Result<int> a = Ok(7);
+Result<int> b = Err(ResultError('boom'));
 ```
 
-Create a result which indicates failure
+## Consuming a result
+
+Pattern-match exhaustively (the compiler requires both arms):
 
 ```dart
-Result errorResult1 = Result.failWith('a fail reason');
-Result errorResult2 = Result.failWith(ResultError('my error message'));
-Result errorResult3 = Result.failWith(MyException('exception description'));
-Result errorResult4 = Result.failWith(['a fail reason', ResultError('my error message')]);
-
-Result same = fail(MyException('exception description'));
+final label = switch (result) {
+  Ok(:final value) => 'ok: $value',          // value is non-null
+  Err(:final error) => 'failed: ${error.message}',
+};
 ```
 
-### Generic `ResultOf<T>`
-
-Success result with value:
+Or use the convenience accessors / combinators:
 
 ```dart
-ResultOf<MyObject> result = ResultOf.success(MyObject());
-ResultOf<MyObject> sameResult = successWith(MyObject());
-MyObject? value = result.value;
+result.isSuccess;          // / isFail
+result.valueOrNull;        // T? — null on Err
+result.error;              // ResultError? — null on Ok
+result.errorMessage;       // '' on Ok
+
+result.valueOr(0);                   // value, or a fallback
+result.getOrElse((e) => 0);          // value, or compute from the error
+result.fold((v) => '$v', (e) => e.message);          // collapse to one value
+result.match(onOk: (v) => '$v', onErr: (e) => e.message);
 ```
 
-Fail result with error and without value:
+## Combinators
 
 ```dart
-ResultOf<MyObject> result = ResultOf.failWith<MyObject>(ResultError('a fail reason'));
-MyObject? value = result.value; // is null because of the fail result
+successWith(2).map((v) => v * 10);             // Ok(20)
+successWith(2).flatMap((v) => successWith(v + 1));
+await successWith(2).flatMapAsync((v) async => successWith(v));
+fail<int>('x').recover((e) => 0);              // Ok(0); no-op on Ok
+fail<int>('x').mapError((e) => ResultError('[${e.message}]'));
 ```
 
-### `failIf()` and `okIf()`
+`map`/`flatMap` pass an `Err` through unchanged (via `Err.cast<R>()`), so a failure flows down a chain without a converter.
 
-With the methods `failIf()` and `okIf()` you can also write in a more readable way:
+## `try*` and `guard`
 
-```dart
-final result1 = Result.failIf(() => firstName.isEmpty, "First Name is empty");
-final result2 = Result.okIf(() => firstName.isNotEmpty, 'First name should not be empty');
-```
-
-### Try
-
-#### Sync
+Wrap throwing code. `trySync`/`tryAsync` take a body that already returns a `Result`; `guard`/`guardAsync` wrap a plain value-returning body:
 
 ```dart
-final res = Result.trySync(() {
-  throw 'Some exception';
+final r1 = Result.guard<int>(() => int.parse(input));        // Result<int>
+final r2 = await Result.guardAsync<User>(() => api.fetch(id));
+
+final r3 = await Result.tryAsync<Order>(() async {
+  final order = await repo.load(id);   // returns a Result<Order>
+  return order;
 });
-
-res.isFail.should.beTrue();
-res.errorMessage.should.be('Some exception');
 ```
 
-#### Async
+These never rethrow an `Exception` (it becomes an `Err`). A thrown **`Error`** — a programming bug — **rethrows** by default (see [Error policy](#error-rethrow-policy)).
+
+### `failIf` / `okIf`
 
 ```dart
-final res = await Result.tryAsync(() async {
-  await Future.delayed(const Duration(seconds: 2));
-  print('Done');
-});
-
-res.isSuccess.should.beTrue();
+Result.failIf(() => name.isEmpty, 'Name is required');
+Result.okIf(() => name.isNotEmpty, 'Name is required');
 ```
 
-### Fold
+Validation failures build through `ResultConfig.failBuilder` and are **never** reported to `onException`.
+
+## Custom errors
+
+`ResultError` carries a `message` plus optional `code`, `cause`, and `stackTrace`. Equality includes `runtimeType`, so distinct subtypes with the same message are not equal.
 
 ```dart
-Result res = fail('error reason');
-res.fold(
-  onFail: (errors) {
-    // process errors
-  },
-  onSuccess: () {
-    // process success path
-  },
-);
-```
-
-```dart
-ResultOf<String> resultWithData = successWith('someData');
-resultWithData.foldWithValue(
-  onFail: (errors) {
-    // process errors
-  },
-  onSuccess: (data) {
-    // process success path with data
-  },
-);
-```
-
-### Converting Result to another
-
-To convert one success result to another success result has to be provided a `valueConverter` function.
-
-```dart
-final anotherResult =
-    result.map((customer) => User(customer.id));
-```
-
-To convert one fail result to another fail result
-
-```dart
-final anotherResult = failResult.map<Customer>();
-```
-
-### Combinators
-
-`ResultOf<T>` provides combinators for composing results without unwrapping:
-
-```dart
-// chain a success into another Result (errors pass through on a fail)
-final r = successWith(2).flatMap((v) => successWith(v * 10)); // ResultOf(20)
-
-// collapse into a value (the value-returning counterpart to foldWithValue)
-final label = r.match(
-  onFail: (errors) => 'failed: ${errors.first.message}',
-  onSuccess: (value) => 'ok: $value',
-);
-
-// extract with a fallback (eager or lazy)
-final value = r.valueOr(0);
-final lazy = r.getOrElse(() => compute());
-
-// recover a fail into a success, or transform every error
-final recovered = failResult.recover((errors) => 0);
-final remapped = failResult.mapError((e) => ResultError('[${e.message}]'));
-```
-
-Wrap a plain, possibly-throwing computation with `guard` / `guardAsync` — the body returns a
-bare value, not a pre-lifted `Result`:
-
-```dart
-final parsed = ResultOf.guard(() => int.parse(input));
-final fetched = await ResultOf.guardAsync(() => api.fetch(id));
-```
-
-### Custom errors
-
-To make your codebase more robust. Create your own error collection of the App by extending `ResultError`.
-
-```dart
-
-class InvalidPasswordError extends ResultError {
-  const InvalidPasswordError(String message)
-      : super(message);
+class NotFound extends ResultError {
+  const NotFound(int id) : super('Not found: $id', code: 'not_found');
 }
 
-class CustomerNotFound extends ResultError {
-  const CustomerNotFound({
-    required this.customerId,
-  }) : super('Customer not found with ID $customerId');
-
-  final int customerId;
-
-  @override
-  String toString() => message;
-}
+final r = fail<User>(const NotFound(42));
+r.error?.code; // 'not_found'
 ```
 
-### Collect errors
-
-For example, easy to work with errors which comes from HTTP API.
-
-```dart
-final err1 = CustomerNotFound(customerId: 1);
-final res = Result.failWith(err1);
-
-final err2 = InvalidPasswordError('The password 123456 is invalid');
-res.add(err2);
-
-res.contains<InvalidPasswordError>(); // true
-res.get<InvalidPasswordError>().should.not.beNull();
-```
-
-### Observability (crash reporting)
+## Observability (crash reporting)
 
 `fluent_result` keeps two error paths separate:
 
-- **Validation** (`failIf` / `okIf`) — deliberate, expected failures. These are **never** reported.
-- **Caught exceptions** (`trySync` / `tryAsync` / `guard` / `guardAsync`) — unexpected throws. These are reported **once** to `ResultConfig.onException`.
+- **Validation** (`failIf` / `okIf`) — deliberate, expected failures. **Never** reported.
+- **Caught exceptions** (`trySync` / `tryAsync` / `guard` / `guardAsync`) — unexpected throws. Reported **once** to `ResultConfig.onException`.
 
-Wire your crash reporter once at startup (no-op by default, so nothing is reported until you do):
+Wire a reporter once at startup (no-op by default):
 
 ```dart
 ResultConfig.onException = (error, stack) {
@@ -211,31 +116,45 @@ ResultConfig.onException = (error, stack) {
 };
 ```
 
-Classify errors with `ResultMatcher`. Matchers are **subtype-aware** (`e is T`) and the first
-match wins. Flag expected control flow (offline, cancellation, 404, …) as `expected: true` so it
-fails quietly without reaching `onException`:
+Classify errors with `ResultMatcher`. Matchers are **subtype-aware** (`e is T`), first match wins, and `build` returns the `ResultError` payload. Flag expected control flow (offline, cancellation, 404, …) as `expected: true` so it fails quietly and is not reported:
 
 ```dart
 ResultConfig.matchers = [
-  // expected control flow — built into a fail Result, NOT reported
-  ResultMatcher((e) => e is SocketException, (e, st) => fail(e), expected: true),
-  // map a third-party error to a typed ResultError (reported, since not expected)
-  ResultMatcher((e) => e is DioException, (e, st) => fail(DioErrorResult(e))),
+  ResultMatcher((e) => e is SocketException, (e, st) => ResultError.of(e),
+      expected: true),
 ];
 ```
 
-> Some third-party errors extend `Error` rather than `Exception` (e.g. `DioError extends Error`),
-> so match them with `(e) => e is DioError` (or `e is Error`) — an `e is Exception` catch-all will
-> not match them.
+Call `ResultConfig.reset()` in your test `tearDown` to keep this global config from leaking between tests.
 
-Call `ResultConfig.reset()` in your test `tearDown` to keep this global config from leaking
-between tests.
+### Error-rethrow policy
 
-#### Migrating from `exceptionHandler` / `exceptionHandlerMatchers`
+A thrown **`Error`** (e.g. `StateError`, `TypeError`) is a bug. By default an `Error` that **no matcher claims** is **rethrown** from `try*`/`guard`, so it reaches the Zone / `PlatformDispatcher.onError` / your crash reporter instead of being silently swallowed into an `Err`. An `Exception` always becomes an `Err`.
 
-Both are **deprecated** but still work — prefer `onException` + `matchers`. If your old
-`exceptionHandler` reported errors itself, move that reporting into `onException`; otherwise an
-unexpected error is reported twice (once by `onException`, once by your handler).
+Some third-party libraries misuse `Error` for expected failures (e.g. `DioError extends Error`). To convert such an `Error` into an `Err` instead of rethrowing, claim it with a matcher:
+
+```dart
+ResultConfig.matchers = [
+  ResultMatcher((e) => e is DioError, (e, st) => ResultError.of(e)),
+];
+```
+
+## Migration (8.5 → 9.0)
+
+| 8.x | 9.0 |
+|-----|-----|
+| `ResultOf<T>` | `Result<T>` (`Ok<T>` / `Err<T>`); value-free is `Result<void>` |
+| `result.value!` / `result.value` | pattern matching, `valueOrNull`, or `valueOr` |
+| `void fold({onFail, onSuccess})` | value-returning `fold((v) => …, (e) => …)` / `match(onOk:, onErr:)` |
+| `result.map<U>()` (fail passthrough) | `Err.cast<R>()` (or just keep `map`/`flatMap`, which pass `Err` through) |
+| `getOrElse(() => x)` / `recover((errors) => x)` | now receive the error: `getOrElse((e) => x)` / `recover((e) => x)` |
+| `ResultConfig.exceptionHandler` | `ResultConfig.onException` (move reporting here) |
+| `ResultConfig.exceptionHandlerMatchers` (map) | `ResultConfig.matchers` (list of `ResultMatcher`) |
+| `ResultConfig.logSuccessResult` | `ResultConfig.onSuccess` |
+| `ResultException(e)` | `ResultError(message, cause: e)` |
+| `asResult`, `add`/`addAll`, multi-error `errors`, `contains<T>`/`get<T>` | removed (single-error model) |
+
+A matcher `build` now returns a `ResultError` (was a `ResultOf`). And a thrown `Error` not claimed by a matcher now rethrows instead of becoming a fail — add a `ResultMatcher((e) => e is Error, …)` if you relied on the old swallow.
 
 ## Contributing
 

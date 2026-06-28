@@ -1,6 +1,4 @@
-// ignore_for_file: prefer_const_constructors
-
-// Regression tests for the 8.5.0 pre-merge adversarial review findings.
+// Regression tests for the 9.0.0 pre-merge adversarial review findings.
 
 import 'package:fluent_result/fluent_result.dart';
 import 'package:shouldly/shouldly.dart';
@@ -9,45 +7,30 @@ import 'package:test/test.dart' hide fail;
 void main() {
   tearDown(ResultConfig.reset);
 
-  test('a throwing matcher.test never escapes and the original is reported',
-      () async {
-    final reported = <Object>[];
-    ResultConfig.onException = (e, __) => reported.add(e);
-    ResultConfig.matchers = [
-      ResultMatcher((e) => throw StateError('test bug'), (e, st) => fail(e)),
-    ];
-    final original = Exception('boom');
-    final r = await Result.tryAsync(() async => throw original);
-    r.isFail.should.beTrue(); // did not rethrow
-    reported.contains(original).should.beTrue(); // original still reported
-  });
-
-  test('a throwing matcher.test never escapes guard (sync)', () {
-    ResultConfig.matchers = [
-      ResultMatcher((e) => throw StateError('test bug'), (e, st) => fail(e)),
-    ];
-    final r = ResultOf.guard<int>(() => throw Exception('boom'));
+  test('a caught exception lands its stack trace in the Err', () {
+    final r = Result.guard<int>(() => throw Exception('boom'));
     r.isFail.should.beTrue();
+    r.error!.stackTrace.should.not.beNull();
   });
 
-  test('a throwing onSuccess does not flip a success into a fail', () async {
-    ResultConfig.onSuccess = (_) => throw StateError('telemetry bug');
-    final r = await Result.tryAsync(() async => success());
-    r.isSuccess.should.beTrue();
+  test('onSuccess does NOT fire for a body-returned Err, nor is it reported',
+      () async {
+    var successes = 0;
+    var reports = 0;
+    ResultConfig.onSuccess = (_) => successes++;
+    ResultConfig.onException = (_, __) => reports++;
+    final r = await Result.tryAsync<int>(() async => fail('x'));
+    r.isFail.should.beTrue();
+    successes.should.be(0);
+    reports.should.be(0);
   });
 
-  test('recover throws StateError on an incoherent non-null success with null',
-      () {
-    final incoherent = ResultOf<int>(isSuccess: true, value: null);
-    expect(() => incoherent.recover((_) => 0), throwsA(isA<StateError>()));
-  });
-
-  test('mapError throws StateError on an incoherent non-null success with null',
-      () {
-    final incoherent = ResultOf<int>(isSuccess: true, value: null);
-    expect(
-      () => incoherent.mapError((e) => ResultError('x')),
-      throwsA(isA<StateError>()),
-    );
+  test('a throwing failBuilder cannot escape the try* catch path', () async {
+    ResultConfig.matchers = [
+      ResultMatcher((e) => true, (e, st) => throw StateError('build bug')),
+    ];
+    ResultConfig.failBuilder = (r) => throw StateError('failBuilder bug');
+    final r = await Result.tryAsync<void>(() async => throw Exception('boom'));
+    r.isFail.should.beTrue();
   });
 }

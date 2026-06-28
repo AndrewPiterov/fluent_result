@@ -1,177 +1,178 @@
-import 'package:collection/collection.dart';
 import 'package:fluent_result/fluent_result.dart';
 
-final _eq = const ListEquality().equals;
+/// The outcome of an operation: either [Ok] with a value, or [Err] with an error.
+///
+/// Consume with an exhaustive `switch`:
+/// ```dart
+/// final label = switch (result) {
+///   Ok(:final value) => 'ok: $value',
+///   Err(:final error) => 'failed: ${error.message}',
+/// };
+/// ```
+sealed class Result<T> {
+  /// Const base constructor.
+  const Result();
 
-/// `Result` is an object indicating success or failure of an operation
-class Result {
-  /// Creates a result with the given [isSuccess] state and optional [errors].
-  const Result({
-    required this.isSuccess,
-    List<ResultError> errors = const [],
-  }) : _errors = errors;
+  /// True for [Ok].
+  bool get isSuccess;
 
-  /// Create success `Result` with value
-  /// ```dart
-  /// Result.success();
-  /// ```
-  const Result.success()
-      : isSuccess = true,
-        _errors = const [];
-
-  /// Result with fail reason
-  /// ```dart
-  /// Result.failWith('fail reason');
-  /// ```
-  factory Result.failWith(Object reason) {
-    final List<Object> reasons =
-        reason is Iterable ? reason.toList().cast() : [reason];
-    return Result(
-      isSuccess: false,
-      errors: reasons.map((e) => ResultError.of(e)).toList(),
-    );
-  }
-
-  /// Returns whether the `Result` is success
-  final bool isSuccess;
-
-  /// Returns whether the `Result` is fail
+  /// True for [Err].
   bool get isFail => !isSuccess;
 
-  final List<ResultError> _errors;
+  /// The success value, or `null` for an [Err]. Prefer pattern matching or
+  /// [ResultCombinators.valueOr]/[ResultCombinators.getOrElse]; a convenience
+  /// for migration and display.
+  T? get valueOrNull;
 
-  /// All errors attached to this result (empty for a success).
-  List<ResultError> get errors => List.unmodifiable(_errors);
+  /// The error, or `null` for an [Ok].
+  ResultError? get error;
 
-  /// The first error, or `null` when there are none.
-  ResultError? get error => errors.isEmpty ? null : errors.first;
-
-  /// The reason why operation has been failed
+  /// The error message, or `''` for an [Ok].
   String get errorMessage => error?.message ?? '';
 
-  /// Contains the Result a error or not
-  bool contains<T extends ResultError>() => get<T>() != null;
+  /// A value-free success.
+  static Result<void> get ok => success();
 
-  /// try get the specific error
-  T? get<T extends ResultError>() =>
-      errors.firstWhereOrNull((e) => e is T) as T?;
-
-  /// Add another error
-  void add(Object reason) {
-    _errors.add(ResultError.of(reason));
-  }
-
-  /// Add other errors
-  void addAll(List<Object> errors) {
-    _errors.addAll(errors.map((e) => ResultError.of(e)));
-  }
-
-  /// Returns success `Result`
-  // ignore: prefer_constructors_over_static_methods
-  static Result get ok => const Result.success();
-
-  /// Fold the `result`
-  void fold({
-    required Function(List<ResultError> errors) onFail,
-    required Function() onSuccess,
-  }) {
-    if (isFail) {
-      onFail(errors);
-    } else {
-      onSuccess();
-    }
-  }
-
-  /// Fails with [reason] when [verify] returns `true`; otherwise succeeds.
-  // ignore: prefer_constructors_over_static_methods
-  static Result failIf(bool Function() verify, String reason) {
-    if (verify()) {
-      return ResultConfig.failBuilder(reason);
-    }
-
-    return Result.ok;
-  }
-
-  /// Succeeds when [verify] returns `true`; otherwise fails with [reason].
-  // ignore: prefer_constructors_over_static_methods
-  static Result okIf(bool Function() verify, String reason) {
-    if (!verify()) {
-      return ResultConfig.failBuilder(reason);
-    }
-
-    return Result.ok;
-  }
-
-  /// Wrapped on try/catch.
-  ///
-  /// On a thrown error, an unexpected exception is reported once via
-  /// `ResultConfig.onException` (matcher-`expected` errors are not), then the
-  /// fail result is built. [onErrorWithStack] takes precedence over [onError].
-  /// Never rethrows: a throwing handler is reported and falls back to a plain
-  /// fail of the original error.
-  factory Result.trySync(
-    Result Function() func, {
-    Result Function(dynamic e)? onError,
-    Result Function(Object e, StackTrace st)? onErrorWithStack,
-    void Function()? onFinally,
-  }) {
-    try {
-      final result = func();
-      ResultConfig.notifySuccess(result);
-      return result;
-    } catch (e, st) {
-      final matched = ResultConfig.classify(e);
-      ResultConfig.reportIfUnexpected(e, st, matched);
-      try {
-        if (onErrorWithStack != null) return onErrorWithStack(e, st);
-        if (onError != null) return onError(e);
-        return ResultConfig.buildFailResult(e, st, matched);
-      } catch (handlerError, handlerSt) {
-        ResultConfig.safeReport(handlerError, handlerSt);
-        return ResultConfig.failBuilder(e);
-      }
-    } finally {
-      ResultConfig.guardFinally(onFinally);
-    }
-  }
-
-  /// Wrapped on try/catch. See [Result.trySync] for the error semantics.
-  static Future<Result> tryAsync(
-    Future<Result> Function() func, {
-    Result Function(dynamic e)? onError,
-    Result Function(Object e, StackTrace st)? onErrorWithStack,
+  /// Wrap an async body that returns a [Result]. Catches exceptions into an
+  /// [Err]; rethrows an unmatched `Error`; never rethrows on the normal path.
+  static Future<Result<T>> tryAsync<T>(
+    Future<Result<T>> Function() body, {
+    Result<T> Function(Object e)? onError,
+    Result<T> Function(Object e, StackTrace st)? onErrorWithStack,
     void Function()? onFinally,
   }) async {
     try {
-      final result = await func();
+      final result = await body();
       ResultConfig.notifySuccess(result);
       return result;
     } catch (e, st) {
       final matched = ResultConfig.classify(e);
+      if (e is Error && matched == null) rethrow;
       ResultConfig.reportIfUnexpected(e, st, matched);
       try {
         if (onErrorWithStack != null) return onErrorWithStack(e, st);
         if (onError != null) return onError(e);
-        return ResultConfig.buildFailResult(e, st, matched);
+        return Err<T>(ResultConfig.buildError(e, st, matched));
       } catch (handlerError, handlerSt) {
         ResultConfig.safeReport(handlerError, handlerSt);
-        return ResultConfig.failBuilder(e);
+        return Err<T>(ResultError.of(e, st));
       }
     } finally {
       ResultConfig.guardFinally(onFinally);
     }
   }
 
-  @override
-  bool operator ==(Object other) =>
-      other is Result &&
-      other.isSuccess == isSuccess &&
-      _eq(other.errors, errors);
+  /// Synchronous [tryAsync].
+  static Result<T> trySync<T>(
+    Result<T> Function() body, {
+    Result<T> Function(Object e)? onError,
+    Result<T> Function(Object e, StackTrace st)? onErrorWithStack,
+    void Function()? onFinally,
+  }) {
+    try {
+      final result = body();
+      ResultConfig.notifySuccess(result);
+      return result;
+    } catch (e, st) {
+      final matched = ResultConfig.classify(e);
+      if (e is Error && matched == null) rethrow;
+      ResultConfig.reportIfUnexpected(e, st, matched);
+      try {
+        if (onErrorWithStack != null) return onErrorWithStack(e, st);
+        if (onError != null) return onError(e);
+        return Err<T>(ResultConfig.buildError(e, st, matched));
+      } catch (handlerError, handlerSt) {
+        ResultConfig.safeReport(handlerError, handlerSt);
+        return Err<T>(ResultError.of(e, st));
+      }
+    } finally {
+      ResultConfig.guardFinally(onFinally);
+    }
+  }
+
+  /// Wrap a plain async value-returning body into a [Result].
+  static Future<Result<T>> guardAsync<T>(
+    Future<T> Function() body, {
+    Result<T> Function(Object e)? onError,
+    Result<T> Function(Object e, StackTrace st)? onErrorWithStack,
+    void Function()? onFinally,
+  }) =>
+      tryAsync<T>(
+        () async => Ok<T>(await body()),
+        onError: onError,
+        onErrorWithStack: onErrorWithStack,
+        onFinally: onFinally,
+      );
+
+  /// Wrap a plain sync value-returning body into a [Result].
+  static Result<T> guard<T>(
+    T Function() body, {
+    Result<T> Function(Object e)? onError,
+    Result<T> Function(Object e, StackTrace st)? onErrorWithStack,
+    void Function()? onFinally,
+  }) =>
+      trySync<T>(
+        () => Ok<T>(body()),
+        onError: onError,
+        onErrorWithStack: onErrorWithStack,
+        onFinally: onFinally,
+      );
+
+  /// Fail with [reason] when [verify] is true, else a value-free success.
+  static Result<void> failIf(bool Function() verify, String reason) =>
+      verify() ? Err<void>(ResultConfig.failBuilder(reason)) : success();
+
+  /// Succeed when [verify] is true, else fail with [reason].
+  static Result<void> okIf(bool Function() verify, String reason) =>
+      verify() ? success() : Err<void>(ResultConfig.failBuilder(reason));
+}
+
+/// A successful [Result] carrying a [value].
+final class Ok<T> extends Result<T> {
+  /// Creates a success carrying [value].
+  const Ok(this.value);
+
+  /// The success value. Non-null when [T] is non-nullable (the common case);
+  /// for a nullable [T] it may be null.
+  final T value;
 
   @override
-  int get hashCode => Object.hash(isSuccess, Object.hashAll(_errors));
+  bool get isSuccess => true;
 
   @override
-  String toString() =>
-      isFail ? errors.map((e) => e.toString()).join('\n') : 'Success';
+  T? get valueOrNull => value;
+
+  @override
+  ResultError? get error => null;
+
+  // Unparameterized `is Ok` keeps `==` symmetric across covariant type args.
+  @override
+  bool operator ==(Object other) => other is Ok && other.value == value;
+
+  @override
+  int get hashCode => Object.hash(Ok, value);
+}
+
+/// A failed [Result] carrying a single [error].
+final class Err<T> extends Result<T> {
+  /// Creates a failure carrying [error].
+  const Err(this.error);
+
+  @override
+  final ResultError error;
+
+  @override
+  bool get isSuccess => false;
+
+  @override
+  T? get valueOrNull => null;
+
+  /// Re-type a failure to another value type (the error is value-agnostic).
+  Err<R> cast<R>() => Err<R>(error);
+
+  @override
+  bool operator ==(Object other) => other is Err && other.error == error;
+
+  @override
+  int get hashCode => Object.hash(Err, error);
 }

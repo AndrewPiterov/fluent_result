@@ -1,3 +1,34 @@
+# [9.0.0]
+
+### Breaking
+
+* The core is now a Dart 3 **sealed `Result<T>`** with `Ok<T>` (non-null `value`) / `Err<T>`. `ResultOf<T>` is removed; value-free success is `Result<void>`.
+* `Ok.value` is non-null `T` (was `ResultOf<T>.value : T?`). Read it via pattern matching / `valueOrNull` / `valueOr`.
+* Single-error model: `List<ResultError>`, `errors` (plural), `add`/`addAll`, `contains<T>`/`get<T>` are removed. `error` (singular) and `errorMessage` remain.
+* `fold` is now value-returning (`R fold<R>(onOk, onErr)`); the 8.x `void fold({onFail, onSuccess})` is gone. `match` is its named-parameter form.
+* A `ResultMatcher` `build` now returns a `ResultError` (was a `ResultOf<dynamic>`); the typed `Err<T>` is wrapped at the `try*` call site.
+* A thrown `Error` not claimed by a matcher now **rethrows** from `try*`/`guard` (reaching the Zone / crash reporter) instead of becoming a silent fail.
+* SDK floor raised to `>=3.0.0`.
+
+### Removed
+
+* The 8.5 deprecated `exceptionHandler`, `exceptionHandlerMatchers`, `logSuccessResult`.
+* `asResult` (extension on `Object`), `ResultException`, the vestigial `ResultConfig()` factory.
+* The `collection` dependency — the package now has zero runtime dependencies.
+
+### Added
+
+* `Ok`/`Err` sealed variants with exhaustive `switch`; value-based, symmetric `==`/`hashCode`.
+* `ResultError.code` / `cause` / `stackTrace`; `runtimeType` in equality.
+* Value-returning `fold` + `match`; `Err.cast<R>`; combinators `map`/`flatMap`/`flatMapAsync`/`recover`/`mapError`/`valueOr`/`getOrElse`.
+* `Error`-rethrow policy with a matcher escape hatch (claim an `Error` type to convert it to `Err`).
+
+### Migration
+
+* `ResultOf<T>` → `Result<T>`; `result.value!` → pattern matching or `valueOrNull`/`valueOr`.
+* Move any `exceptionHandler` reporting to `onException`; replace `exceptionHandlerMatchers` maps with `matchers`.
+* For `Error`-derived third-party exceptions (e.g. `DioError extends Error`), add a `ResultMatcher((e) => e is Error, ...)` or they will rethrow.
+
 # [8.5.0]
 
 * [Add] Global observability seam `ResultConfig.onException` (no-op by default) — the single place to wire crash reporting (e.g. Sentry). Unexpected caught exceptions are reported exactly once.
