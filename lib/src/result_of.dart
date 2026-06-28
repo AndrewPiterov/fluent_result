@@ -2,7 +2,7 @@ import 'package:fluent_result/fluent_result.dart';
 
 /// Generic version of `Result` that holds value
 class ResultOf<T> extends Result {
-  ///
+  /// Creates a result with the given [isSuccess] state, [value] and [error]s.
   ResultOf({
     required bool isSuccess,
     required this.value,
@@ -175,12 +175,9 @@ class ResultOf<T> extends Result {
     return value as T;
   }
 
-  /// <summary>
-  /// Convert result with value to result with another value. Use valueConverter
-  /// parameter to specify the value transformation logic.
-  ///
-  /// No need valueConverter for Fail result. But for Success you should define it.
-  /// </summary>
+  /// Transform a success value with [valueConverter], producing a new
+  /// `ResultOf`. The converter is required for a success; on a fail the errors
+  /// pass through unchanged and no converter is needed.
   ResultOf<U?> map<U>([U Function(T)? valueConverter]) {
     if (isSuccess) {
       if (valueConverter == null) {

@@ -1,7 +1,14 @@
 name: fluent_result
-description: FluentResults is a Dart library developed to solve a common problem. It returns an object indicating success or failure of an operation instead of throwing/using exceptions.
+description: A fluent Result type for Dart that returns success/failure instead of throwing, with a global observability seam for crash reporting.
 version: 8.4.1
 homepage: https://github.com/AndrewPiterov/fluent_result
+repository: https://github.com/AndrewPiterov/fluent_result
+issue_tracker: https://github.com/AndrewPiterov/fluent_result/issues
+topics:
+  - result
+  - error-handling
+  - functional
+  - either
 
 environment:
   sdk: '>=2.14.0 <4.0.0'

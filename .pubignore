@@ -1,0 +1,9 @@
+# A .pubignore replaces .gitignore for publishing, so re-list the build and
+# tooling artifacts that should never ship to pub.dev, plus the planning docs.
+docs/
+build/
+coverage/
+.dart_tool/
+.DS_Store
+.github/
+.vscode/

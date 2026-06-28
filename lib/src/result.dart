@@ -5,7 +5,7 @@ final _eq = const ListEquality().equals;
 
 /// `Result` is an object indicating success or failure of an operation
 class Result {
-  ///
+  /// Creates a result with the given [isSuccess] state and optional [errors].
   const Result({
     required this.isSuccess,
     List<ResultError> errors = const [],
@@ -40,10 +40,10 @@ class Result {
 
   final List<ResultError> _errors;
 
-  ///
+  /// All errors attached to this result (empty for a success).
   List<ResultError> get errors => List.unmodifiable(_errors);
 
-  ///
+  /// The first error, or `null` when there are none.
   ResultError? get error => errors.isEmpty ? null : errors.first;
 
   /// The reason why operation has been failed
@@ -82,7 +82,7 @@ class Result {
     }
   }
 
-  ///
+  /// Fails with [reason] when [verify] returns `true`; otherwise succeeds.
   // ignore: prefer_constructors_over_static_methods
   static Result failIf(bool Function() verify, String reason) {
     if (verify()) {
@@ -92,7 +92,7 @@ class Result {
     return Result.ok;
   }
 
-  ///
+  /// Succeeds when [verify] returns `true`; otherwise fails with [reason].
   // ignore: prefer_constructors_over_static_methods
   static Result okIf(bool Function() verify, String reason) {
     if (!verify()) {
