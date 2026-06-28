@@ -27,10 +27,10 @@ class ResultOf<T> extends Result {
   /// ```dart
   /// ResultOf.failWith('fail reason');
   /// ```
-  static ResultOf<T?> failWith<T>(dynamic reason) {
+  static ResultOf<T> failWith<T>(dynamic reason) {
     final List reasons = reason is Iterable ? reason.toList().cast() : [reason];
 
-    return ResultOf(
+    return ResultOf<T>(
       isSuccess: false,
       value: null,
       error: reasons.map((e) => ResultError.of(e)).toList(),
